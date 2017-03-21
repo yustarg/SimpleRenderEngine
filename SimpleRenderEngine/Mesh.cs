@@ -39,7 +39,7 @@ namespace SimpleRenderEngine
                 new Triangle(4, 5, 6),
                 new Triangle(4, 6, 7),
                 // 上面
-                new Triangle(2, 6, 3),
+                new Triangle(3, 2, 6),
                 new Triangle(3, 6, 7),
                 // 下面
                 new Triangle(0, 1, 5),
