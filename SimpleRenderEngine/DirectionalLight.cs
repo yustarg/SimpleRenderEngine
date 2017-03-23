@@ -12,6 +12,7 @@ namespace SimpleRenderEngine
         public static Color AmbientColor = Color.FromArgb(0, 50, 0);
         private const int MAXKD = 5;
 
+        public bool IsEnable { get; set; }
         public Vector4 LightPos { get; set; }
         public Color LightColor { get; set; }
         private float kd;

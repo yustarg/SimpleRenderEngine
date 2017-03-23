@@ -35,7 +35,7 @@ namespace SimpleRenderEngine
         {
             for (int i = 0; i < this.bmp.Width; i++)
                 for (int j = 0; j < this.bmp.Height; j++)
-                    this.bmp.SetPixel(i, j, Color.FromArgb(255, 255, 255));
+                    this.bmp.SetPixel(i, j, Color.CadetBlue);
             for (int index = 0; index < depthBuffer.Length; index++)
             {
                 depthBuffer[index] = float.MaxValue;
@@ -106,7 +106,7 @@ namespace SimpleRenderEngine
         */
 
         // DDA 画线算法
-        public void DrawLine(Vertex v1, Vertex v2, Vector4 point0, Vector4 point1, DirectionalLight light)
+        public void DrawLine(Vertex v1, Vertex v2, Vector4 point0, Vector4 point1, Scene scene)
         {
             int x0 = (int)point0.X;
             int y0 = (int)point0.Y;
@@ -122,28 +122,35 @@ namespace SimpleRenderEngine
             float x = x0;
             float y = y0;
 
-            float nDotL1 = light.ComputeNDotL(v1.Position, v1.Normal);
-            float nDotL2 = light.ComputeNDotL(v2.Position, v2.Normal);
+            float nDotL1 = scene.light.ComputeNDotL(v1.Position, v1.Normal);
+            float nDotL2 = scene.light.ComputeNDotL(v2.Position, v2.Normal);
             for (int i = 1; i <= steps; i++)
             {
                 float ratio = (float)i / (float)steps;
-                Color c1 = Color.FromArgb((int)(nDotL1 * light.LightColor.R), (int)(nDotL1 * light.LightColor.G), (int)(nDotL1 * light.LightColor.B));
-                Color c2 = Color.FromArgb((int)(nDotL2 * light.LightColor.R), (int)(nDotL2 * light.LightColor.G), (int)(nDotL2 * light.LightColor.B));
-                c1 = MathUtil.AddColor(c1, DirectionalLight.AmbientColor);
-                c2 = MathUtil.AddColor(c2, DirectionalLight.AmbientColor);
-                DrawPoint(new Vector4((int)x, (int)y, 0, 0), MathUtil.ColorInterp(c1, c2, ratio));
+                Color vertexColor = Color.FromArgb(0, 0, 0);
+                Color lightColor = Color.FromArgb(0, 0, 0);
+                if (scene.light.IsEnable)
+                {
+                    Color c1 = scene.light.GetFinalLightColor(nDotL1);
+                    Color c2 = scene.light.GetFinalLightColor(nDotL2);
+                    lightColor = MathUtil.ColorInterp(c1, c2, ratio);
+                }else
+                {
+                    vertexColor = MathUtil.ColorInterp(v1.Color, v2.Color, ratio);
+                }
+                DrawPoint(new Vector4((int)x, (int)y, 0, 0), MathUtil.AddColor(vertexColor, lightColor));
                 x += xInc;
                 y += yInc;
             }
         }
 
-        public void DrawTriangle(Vertex p1, Vertex p2, Vertex p3, Matrix4x4 mvp, DirectionalLight light)
+        public void DrawTriangle(Vertex p1, Vertex p2, Vertex p3, Matrix4x4 mvp, Scene scene)
         {
             Vertex[] vertices = new Vertex[3];
             vertices[0] = p1;
             vertices[1] = p2;
             vertices[2] = p3;
-            this.scanLine.ProcessScanLine(vertices, mvp, light);
+            this.scanLine.ProcessScanLine(vertices, mvp, scene);
         }
 
         
@@ -171,13 +178,14 @@ namespace SimpleRenderEngine
                 if (scene.renderState == Scene.RenderState.WireFrame)
                 {
                     // 画线框
-                    DrawLine(vertexA, vertexB, pixelA, pixelB, scene.light);
-                    DrawLine(vertexB, vertexC, pixelB, pixelC, scene.light);
-                    DrawLine(vertexC, vertexA, pixelC, pixelA, scene.light);
-                }else if(scene.renderState == Scene.RenderState.GouraudShading)
+                    DrawLine(vertexA, vertexB, pixelA, pixelB, scene);
+                    DrawLine(vertexB, vertexC, pixelB, pixelC, scene);
+                    DrawLine(vertexC, vertexA, pixelC, pixelA, scene);
+                }
+                else
                 { 
                     // 填充三角形
-                    DrawTriangle(vertexA, vertexB, vertexC, matrixMVP, scene.light);
+                    DrawTriangle(vertexA, vertexB, vertexC, matrixMVP, scene);
                 } 
             }
         }

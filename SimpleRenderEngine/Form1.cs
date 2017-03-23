@@ -38,7 +38,7 @@ namespace SimpleRenderEngine
 
         private void InitMesh()
         {
-            scene.mesh = new Mesh("Cube");
+            scene.mesh = new Mesh("Cube", @"E:\SimpleRenderEngine\SimpleRenderEngine\SimpleRenderEngine\textures\background.png");
             //Vector4[] vertices = new Vector4[8] {
             //    new Vector4(-1, -1, -1, 1),
             //    new Vector4(1, -1, -1, 1),
@@ -64,25 +64,25 @@ namespace SimpleRenderEngine
                 new Vertex(new Vector4(1, 1, -1, 1), new Vector4(1, 0, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(0, 0, 255)),
                 new Vertex(new Vector4(1, 1, -1, 1), new Vector4(0, 0, -1, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(0, 0, 255)),
 
-                new Vertex(new Vector4(-1, 1, -1, 1), new Vector4(0, 1, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(255, 0, 0)),
-                new Vertex(new Vector4(-1, 1, -1, 1), new Vector4(-1, 0, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(255, 0, 0)),
-                new Vertex(new Vector4(-1, 1, -1, 1), new Vector4(0, 0, -1, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(255, 0, 0)),
+                new Vertex(new Vector4(-1, 1, -1, 1), new Vector4(0, 1, 0, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(255, 0, 0)),
+                new Vertex(new Vector4(-1, 1, -1, 1), new Vector4(-1, 0, 0, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(255, 0, 0)),
+                new Vertex(new Vector4(-1, 1, -1, 1), new Vector4(0, 0, -1, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(255, 0, 0)),
                 
-                new Vertex(new Vector4(-1, -1, 1, 1), new Vector4(0, -1, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(0, 255, 0)),
-                new Vertex(new Vector4(-1, -1, 1, 1), new Vector4(-1, 0, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(0, 255, 0)),
-                new Vertex(new Vector4(-1, -1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(0, 255, 0)),
+                new Vertex(new Vector4(-1, -1, 1, 1), new Vector4(0, -1, 0, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(0, 255, 0)),
+                new Vertex(new Vector4(-1, -1, 1, 1), new Vector4(-1, 0, 0, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(0, 255, 0)),
+                new Vertex(new Vector4(-1, -1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(0, 255, 0)),
                 
-                new Vertex(new Vector4(1, -1, 1, 1), new Vector4(0, -1, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(0, 0, 255)),
-                new Vertex(new Vector4(1, -1, 1, 1), new Vector4(1, 0, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(0, 0, 255)),
-                new Vertex(new Vector4(1, -1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(0, 0, 255)),
+                new Vertex(new Vector4(1, -1, 1, 1), new Vector4(0, -1, 0, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(0, 0, 255)),
+                new Vertex(new Vector4(1, -1, 1, 1), new Vector4(1, 0, 0, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(0, 0, 255)),
+                new Vertex(new Vector4(1, -1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(0, 0, 255)),
                 
                 new Vertex(new Vector4(1, 1, 1, 1), new Vector4(0, 1, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(255, 0, 0)),
                 new Vertex(new Vector4(1, 1, 1, 1), new Vector4(1, 0, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(255, 0, 0)),
                 new Vertex(new Vector4(1, 1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(255, 0, 0)),
                 
-                new Vertex(new Vector4(-1, 1, 1, 1), new Vector4(0, 1, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(255, 255, 0)),
-                new Vertex(new Vector4(-1, 1, 1, 1), new Vector4(-1, 0, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(255, 255, 0)),
-                new Vertex(new Vector4(-1, 1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(255, 255, 0)),
+                new Vertex(new Vector4(-1, 1, 1, 1), new Vector4(0, 1, 0, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(255, 255, 0)),
+                new Vertex(new Vector4(-1, 1, 1, 1), new Vector4(-1, 0, 0, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(255, 255, 0)),
+                new Vertex(new Vector4(-1, 1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(255, 255, 0)),
             };
 
             scene.mesh.SetVertices(vertices);
@@ -91,13 +91,14 @@ namespace SimpleRenderEngine
         private void InitCamera()
         {
             scene.camera = new Camera(PI * 0.5f, (float)this.Width / (float)this.Height, 1.0f, 500.0f);
-            scene.camera.Position = new Vector4(0, 5, 5, 1);
+            scene.camera.Position = new Vector4(5, -5, -2, 1);
             scene.camera.Target = new Vector4(0, 0, 1, 1);
         }
 
         private void InitLight()
         {
-            scene.light = new DirectionalLight(new Vector4(-2, 2, 0, 1), Color.FromArgb(255, 0, 0));
+            scene.light = new DirectionalLight(new Vector4(-2, 2, 0, 1), Color.FromArgb(255, 255, 255));
+            scene.light.IsEnable = false;
         }
 
         private void InitSettings()
@@ -120,6 +121,7 @@ namespace SimpleRenderEngine
             this.Paint += new PaintEventHandler(Form1_Paint); // 自己手动添加处理事件
         }
 
+        // Wire Frame
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
         {
             if (this.radioButton1.Checked)
@@ -129,6 +131,7 @@ namespace SimpleRenderEngine
             }
         }
 
+        // Gouraud Shading
         private void radioButton2_CheckedChanged(object sender, EventArgs e)
         {
             if (this.radioButton2.Checked)
@@ -138,6 +141,7 @@ namespace SimpleRenderEngine
             }
         }
 
+        // Texture Mapping
         private void radioButton3_CheckedChanged(object sender, EventArgs e)
         {
             if (this.radioButton3.Checked)
@@ -147,10 +151,12 @@ namespace SimpleRenderEngine
             }
         }
 
+        // Lighting
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             this.hScrollBar1.Visible = checkBox1.Checked;
             this.hScrollBar1.Value = (int)(0.2f * this.hScrollBar1.Maximum);
+            this.scene.light.IsEnable = checkBox1.Checked;
             this.Invalidate();
         }
 
@@ -160,7 +166,5 @@ namespace SimpleRenderEngine
             this.scene.light.Kd = ratio;
             this.Invalidate();
         }
-
-        
     }
 }

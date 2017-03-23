@@ -28,7 +28,7 @@ namespace SimpleRenderEngine
         }
 
         // 需要屏幕坐标
-        public void ProcessScanLine(Vertex[] vertices, Matrix4x4 mvp, DirectionalLight light)
+        public void ProcessScanLine(Vertex[] vertices, Matrix4x4 mvp, Scene scene)
         {
             for (int i = 0; i < vertices.Length; i++)
             {
@@ -76,6 +76,7 @@ namespace SimpleRenderEngine
                     Edge a1 = (Edge)AEL.nextEdge.Clone();
                     Edge a2 = (Edge)AEL.nextEdge.nextEdge.Clone();
 
+                    // 插值
                     Vector4 screenA1V1 = this.device.Project(a1.v1.Position, mvp);
                     Vector4 screenA1V2 = this.device.Project(a1.v2.Position, mvp);
                     Vector4 screenA2V1 = this.device.Project(a2.v1.Position, mvp);
@@ -87,12 +88,24 @@ namespace SimpleRenderEngine
                     float z1 = MathUtil.Interp(screenA1V1.Z, screenA1V2.Z, r1);
                     float z2 = MathUtil.Interp(screenA2V1.Z, screenA2V2.Z, r2);
 
-                    float nDotLA1V1 = light.ComputeNDotL(a1.v1.Position, a1.v1.Normal);   // 这里暂时默认模型空间就是世界空间
-                    float nDotLA1V2 = light.ComputeNDotL(a1.v2.Position, a1.v2.Normal);
-                    float nDotLA2V1 = light.ComputeNDotL(a2.v1.Position, a2.v1.Normal);
-                    float nDotLA2V2 = light.ComputeNDotL(a2.v2.Position, a2.v2.Normal);
+                    float nDotLA1V1 = scene.light.ComputeNDotL(a1.v1.Position, a1.v1.Normal);   // 这里暂时默认模型空间就是世界空间
+                    float nDotLA1V2 = scene.light.ComputeNDotL(a1.v2.Position, a1.v2.Normal);
+                    float nDotLA2V1 = scene.light.ComputeNDotL(a2.v1.Position, a2.v1.Normal);
+                    float nDotLA2V2 = scene.light.ComputeNDotL(a2.v2.Position, a2.v2.Normal);
                     float nDotL1 = MathUtil.Interp(nDotLA1V1, nDotLA1V2, r1);
                     float nDotL2 = MathUtil.Interp(nDotLA2V1, nDotLA2V2, r2);
+
+                    float u1 = 0;
+                    float v1 = 0;
+                    float u2 = 0;
+                    float v2 = 0;
+                    if (scene.renderState == Scene.RenderState.TextureMapping)
+                    {
+                        u1 = MathUtil.Interp(a1.v1.UV.X, a1.v2.UV.X, r1);
+                        v1 = MathUtil.Interp(a1.v1.UV.Y, a1.v2.UV.Y, r1);
+                        u2 = MathUtil.Interp(a2.v1.UV.X, a2.v2.UV.X, r2);
+                        v2 = MathUtil.Interp(a2.v1.UV.Y, a2.v2.UV.Y, r2);
+                    }
 
                     while (a1 != null && a2 != null)
                     {
@@ -102,8 +115,18 @@ namespace SimpleRenderEngine
                             Color c3 = MathUtil.ColorInterp(c1, c2, r3);
                             float z = MathUtil.Interp(z1, z2, r3);
                             float nDotL = MathUtil.Interp(nDotL1, nDotL2, r3);
-                            //this.device.DrawPoint(new Vector4(x, i, z, 0), MathUtil.AddColor(MathUtil.MulColor(c3, nDotL), DirectionalLight.AmbientColor));
-                            this.device.DrawPoint(new Vector4(x, i, z, 0), light.GetFinalLightColor(nDotL));
+                            Color final = Color.FromArgb(255, 255, 255);
+                            if (scene.renderState == Scene.RenderState.GouraudShading)
+                            {
+                                final = scene.light.IsEnable ? scene.light.GetFinalLightColor(nDotL) : c3;                            
+                            }
+                            else if (scene.renderState == Scene.RenderState.TextureMapping)
+                            {
+                                float u3 = MathUtil.Interp(u1, u2, r3);
+                                float v3 = MathUtil.Interp(v1, v2, r3);
+                                final = scene.mesh.texture.Map(u3, v3);
+                            }
+                            this.device.DrawPoint(new Vector4(x, i, z, 0), final);
                         }
                         if (a2.nextEdge != null && a2.nextEdge.nextEdge != null)
                         {

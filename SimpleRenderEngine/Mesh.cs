@@ -12,10 +12,12 @@ namespace SimpleRenderEngine
         public string Name { get; set; }
         public Vertex[] Vertices { get; private set; }
         public Triangle[] triangles { get; set; }
+        public Texture texture;
 
-        public Mesh(string name)
+        public Mesh(string name, string texPathing)
         {
             Name = name;
+            texture = new Texture(texPathing, 580, 580);
         }
 
         public void SetVertices(Vertex[] vertices)
