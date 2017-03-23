@@ -17,7 +17,7 @@ namespace SimpleRenderEngine
         public Mesh(string name, string texPathing)
         {
             Name = name;
-            texture = new Texture(texPathing, 580, 580);
+            texture = new Texture(texPathing, 2048, 1206);
         }
 
         public void SetVertices(Vertex[] vertices)

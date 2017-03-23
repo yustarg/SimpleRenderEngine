@@ -38,7 +38,7 @@ namespace SimpleRenderEngine
 
         private void InitMesh()
         {
-            scene.mesh = new Mesh("Cube", @"E:\SimpleRenderEngine\SimpleRenderEngine\SimpleRenderEngine\textures\background.png");
+            scene.mesh = new Mesh("Cube", @"E:\SimpleRenderEngine\SimpleRenderEngine\SimpleRenderEngine\textures\background.jpg");
             //Vector4[] vertices = new Vector4[8] {
             //    new Vector4(-1, -1, -1, 1),
             //    new Vector4(1, -1, -1, 1),
@@ -53,26 +53,26 @@ namespace SimpleRenderEngine
             // pos, normal, uv, color  法线方向按上下左右前后排列
             Vertex[] vertices = new Vertex[24] {
                 new Vertex(new Vector4(-1, -1, -1, 1), new Vector4(0, -1, 0, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(255, 0, 0)),
-                new Vertex(new Vector4(-1, -1, -1, 1), new Vector4(-1, 0, 0, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(255, 0, 0)),
+                new Vertex(new Vector4(-1, -1, -1, 1), new Vector4(-1, 0, 0, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(255, 0, 0)),
                 new Vertex(new Vector4(-1, -1, -1, 1), new Vector4(0, 0, -1, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(255, 0, 0)),
                 
                 new Vertex(new Vector4(1, -1, -1, 1), new Vector4(0, -1, 0, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(0, 255, 0)),
-                new Vertex(new Vector4(1, -1, -1, 1), new Vector4(1, 0, 0, 1),  new Vector4(1, 0, 0, 0), Color.FromArgb(0, 255, 0)),
+                new Vertex(new Vector4(1, -1, -1, 1), new Vector4(1, 0, 0, 1),  new Vector4(0, 0, 0, 0), Color.FromArgb(0, 255, 0)),
                 new Vertex(new Vector4(1, -1, -1, 1), new Vector4(0, 0, -1, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(0, 255, 0)),
                   
-                new Vertex(new Vector4(1, 1, -1, 1), new Vector4(0, 1, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(0, 0, 255)),
-                new Vertex(new Vector4(1, 1, -1, 1), new Vector4(1, 0, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(0, 0, 255)),
+                new Vertex(new Vector4(1, 1, -1, 1), new Vector4(0, 1, 0, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(0, 0, 255)),
+                new Vertex(new Vector4(1, 1, -1, 1), new Vector4(1, 0, 0, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(0, 0, 255)),
                 new Vertex(new Vector4(1, 1, -1, 1), new Vector4(0, 0, -1, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(0, 0, 255)),
 
-                new Vertex(new Vector4(-1, 1, -1, 1), new Vector4(0, 1, 0, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(255, 0, 0)),
-                new Vertex(new Vector4(-1, 1, -1, 1), new Vector4(-1, 0, 0, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(255, 0, 0)),
+                new Vertex(new Vector4(-1, 1, -1, 1), new Vector4(0, 1, 0, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(255, 0, 0)),
+                new Vertex(new Vector4(-1, 1, -1, 1), new Vector4(-1, 0, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(255, 0, 0)),
                 new Vertex(new Vector4(-1, 1, -1, 1), new Vector4(0, 0, -1, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(255, 0, 0)),
                 
-                new Vertex(new Vector4(-1, -1, 1, 1), new Vector4(0, -1, 0, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(0, 255, 0)),
+                new Vertex(new Vector4(-1, -1, 1, 1), new Vector4(0, -1, 0, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(0, 255, 0)),
                 new Vertex(new Vector4(-1, -1, 1, 1), new Vector4(-1, 0, 0, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(0, 255, 0)),
                 new Vertex(new Vector4(-1, -1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(0, 255, 0)),
                 
-                new Vertex(new Vector4(1, -1, 1, 1), new Vector4(0, -1, 0, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(0, 0, 255)),
+                new Vertex(new Vector4(1, -1, 1, 1), new Vector4(0, -1, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(0, 0, 255)),
                 new Vertex(new Vector4(1, -1, 1, 1), new Vector4(1, 0, 0, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(0, 0, 255)),
                 new Vertex(new Vector4(1, -1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(0, 0, 255)),
                 
@@ -91,7 +91,7 @@ namespace SimpleRenderEngine
         private void InitCamera()
         {
             scene.camera = new Camera(PI * 0.5f, (float)this.Width / (float)this.Height, 1.0f, 500.0f);
-            scene.camera.Position = new Vector4(5, -5, -2, 1);
+            scene.camera.Position = new Vector4(5, 5, -5, 1);
             scene.camera.Target = new Vector4(0, 0, 1, 1);
         }
 

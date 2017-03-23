@@ -99,12 +99,20 @@ namespace SimpleRenderEngine
                     float v1 = 0;
                     float u2 = 0;
                     float v2 = 0;
+                    float w11 = mvp.Apply(a1.v1.Position).W;
+                    float w12 = mvp.Apply(a1.v2.Position).W;
+                    float w21 = mvp.Apply(a2.v1.Position).W;
+                    float w22 = mvp.Apply(a2.v2.Position).W;
+                    float w1 = 0;
+                    float w2 = 0;
                     if (scene.renderState == Scene.RenderState.TextureMapping)
                     {
-                        u1 = MathUtil.Interp(a1.v1.UV.X, a1.v2.UV.X, r1);
-                        v1 = MathUtil.Interp(a1.v1.UV.Y, a1.v2.UV.Y, r1);
-                        u2 = MathUtil.Interp(a2.v1.UV.X, a2.v2.UV.X, r2);
-                        v2 = MathUtil.Interp(a2.v1.UV.Y, a2.v2.UV.Y, r2);
+                        u1 = MathUtil.Interp(a1.v1.UV.X / w11, a1.v2.UV.X / w12, r1);
+                        v1 = MathUtil.Interp(a1.v1.UV.Y / w11, a1.v2.UV.Y / w12, r1);
+                        u2 = MathUtil.Interp(a2.v1.UV.X / w21, a2.v2.UV.X / w22, r2);
+                        v2 = MathUtil.Interp(a2.v1.UV.Y / w21, a2.v2.UV.Y / w22, r2);
+                        w1 = MathUtil.Interp(1 / w11, 1 / w12, r1);
+                        w2 = MathUtil.Interp(1 / w21, 1 / w22, r2);
                     }
 
                     while (a1 != null && a2 != null)
@@ -122,8 +130,9 @@ namespace SimpleRenderEngine
                             }
                             else if (scene.renderState == Scene.RenderState.TextureMapping)
                             {
-                                float u3 = MathUtil.Interp(u1, u2, r3);
-                                float v3 = MathUtil.Interp(v1, v2, r3);
+                                float w = MathUtil.Interp(w1, w2, r3);
+                                float u3 = MathUtil.Interp(u1, u2, r3) / w;
+                                float v3 = MathUtil.Interp(v1, v2, r3) / w;
                                 final = scene.mesh.texture.Map(u3, v3);
                             }
                             this.device.DrawPoint(new Vector4(x, i, z, 0), final);
