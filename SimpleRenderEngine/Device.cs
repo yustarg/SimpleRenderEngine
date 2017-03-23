@@ -7,25 +7,48 @@ using System.Threading.Tasks;
 
 namespace SimpleRenderEngine
 {
-    class Device
+    public class Device
     {
-        private Edge[] ET;
-        private Edge AEL;
-        
         private Bitmap bmp;
+        private ScanLine scanLine;
+        private readonly float[] depthBuffer;
 
         public Device(Bitmap bmp)
         {
             this.bmp = bmp;
-            ET = new Edge[bmp.Height];
-            for (int i = 0; i < bmp.Height; i++)
+            this.scanLine = new ScanLine(this);
+            depthBuffer = new float[bmp.Width * bmp.Height];
+            Clear();
+        }
+
+        public int GetHeight()
+        {
+            return this.bmp.Height;
+        }
+
+        public int GetWidth()
+        {
+            return this.bmp.Width;
+        }
+
+        public void Clear()
+        {
+            for (int i = 0; i < this.bmp.Width; i++)
+                for (int j = 0; j < this.bmp.Height; j++)
+                    this.bmp.SetPixel(i, j, Color.FromArgb(255, 255, 255));
+            for (int index = 0; index < depthBuffer.Length; index++)
             {
-                ET[i] = new Edge();
+                depthBuffer[index] = float.MaxValue;
             }
         }
 
-        public void PutPixel(int x, int y, Color color)
+        public void PutPixel(int x, int y, float z, Color color)
         {
+            int index = (x + y * GetWidth());
+            
+            if (depthBuffer[index] < z) return;
+
+            depthBuffer[index] = z;
             this.bmp.SetPixel(x, y, color);
         }
 
@@ -41,7 +64,7 @@ namespace SimpleRenderEngine
         {
             Vector4 val = new Vector4();
             float rhw = 1.0f / x.W;
-            val.X = (x.X * rhw + 1.0f) * this.bmp.Width * 0.5f;
+            val.X = (1.0f - x.X * rhw) * this.bmp.Width * 0.5f;
             val.Y = (1.0f - x.Y * rhw) * this.bmp.Height * 0.5f;
             val.Z = x.Z * rhw;
             val.W = 1.0f;
@@ -52,8 +75,7 @@ namespace SimpleRenderEngine
         {
             if (point.X >= 0 && point.Y >= 0 && point.X < bmp.Width && point.Y < bmp.Height)
             {
-                PutPixel((int)point.X, (int)point.Y, c);
-                //Console.WriteLine(point);
+                PutPixel((int)point.X, (int)point.Y, point.Z, c);
             }
         }
 
@@ -84,7 +106,7 @@ namespace SimpleRenderEngine
         */
 
         // DDA 画线算法
-        public void DrawLine(Vector4 point0, Vector4 point1, Color color)
+        public void DrawLine(Vertex v1, Vertex v2, Vector4 point0, Vector4 point1, DirectionalLight light)
         {
             int x0 = (int)point0.X;
             int y0 = (int)point0.Y;
@@ -99,145 +121,64 @@ namespace SimpleRenderEngine
 
             float x = x0;
             float y = y0;
+
+            float nDotL1 = light.ComputeNDotL(v1.Position, v1.Normal);
+            float nDotL2 = light.ComputeNDotL(v2.Position, v2.Normal);
             for (int i = 1; i <= steps; i++)
             {
-                DrawPoint(new Vector4((int)x, (int)y, 0, 0), Color.FromArgb(1, 0, 0));
+                float ratio = (float)i / (float)steps;
+                Color c1 = Color.FromArgb((int)(nDotL1 * light.LightColor.R), (int)(nDotL1 * light.LightColor.G), (int)(nDotL1 * light.LightColor.B));
+                Color c2 = Color.FromArgb((int)(nDotL2 * light.LightColor.R), (int)(nDotL2 * light.LightColor.G), (int)(nDotL2 * light.LightColor.B));
+                c1 = MathUtil.AddColor(c1, DirectionalLight.AmbientColor);
+                c2 = MathUtil.AddColor(c2, DirectionalLight.AmbientColor);
+                DrawPoint(new Vector4((int)x, (int)y, 0, 0), MathUtil.ColorInterp(c1, c2, ratio));
                 x += xInc;
                 y += yInc;
             }
         }
 
-        public void DrawTriangle(Vector4 p1, Vector4 p2, Vector4 p3, Color color)
+        public void DrawTriangle(Vertex p1, Vertex p2, Vertex p3, Matrix4x4 mvp, DirectionalLight light)
         {
-            Vector4[] vertices = new Vector4[3];
+            Vertex[] vertices = new Vertex[3];
             vertices[0] = p1;
             vertices[1] = p2;
             vertices[2] = p3;
-            for (int i = 0; i < vertices.Length; i++)
-            {
-                for (int j = i + 1; j < vertices.Length; j++)
-                {
-                    if (vertices[i].Y != vertices[j].Y)
-                    {
-                        int x1 = (int)vertices[i].X;
-                        int y1 = (int)vertices[i].Y;
-                        int x2 = (int)vertices[j].X;
-                        int y2 = (int)vertices[j].Y;
-                        int ymin = y1 > y2 ? y2 : y1;
-                        int ymax = y1 > y2 ? y1 : y2;
-                        float x = y1 > y2 ? x2 : x1;
-                        float dx = (x1 - x2) * 1.0f / (y1 - y2);
-                        Edge e = new Edge();
-                        e.yMax = ymax;
-                        e.x = x;
-                        e.deltaX = dx;
-                        InsertEdge(ref ET[ymin].nextEdge, e);
-                    }
-                }
-            }
-
-            // 置空活动边表
-            AEL = new Edge();
-            for (int i = 0; i < this.bmp.Height; i++)
-            {
- //               if (ET[i].nextEdge != null)
-                {
-                    while (ET[i].nextEdge != null)
-                    {
-                        InsertEdge(ref AEL, ET[i].nextEdge);
-                        ET[i].nextEdge = ET[i].nextEdge.nextEdge;
-                    }
-
-                    while (AEL.nextEdge != null && AEL.nextEdge.nextEdge != null)
-                    {
-                        for (int x = (int)AEL.nextEdge.x; x < (int)AEL.nextEdge.nextEdge.x; x++)
-                        {
-                            DrawPoint(new Vector4(x, i, 0, 0), Color.FromArgb(1, 0, 0));
-                        }
-                        AEL.nextEdge = AEL.nextEdge.nextEdge;
-                    }
-
-                    Edge p = AEL;
-                    while (p.nextEdge != null)
-                    {
-                        if (p.nextEdge.yMax == i)
-                        {
-                            Edge pDelete = p.nextEdge;
-                            p.nextEdge = pDelete.nextEdge;
-                            pDelete.nextEdge = null;
-                        }
-                        else
-                        {
-                            p = p.nextEdge;
-                        }
-                    }
-
-                    p = AEL;
-                    while (p.nextEdge != null)
-                    {
-                        p.nextEdge.x += p.nextEdge.deltaX;
-                        p = p.nextEdge;
-                    }
-                }
-            }
+            this.scanLine.ProcessScanLine(vertices, mvp, light);
         }
 
-        void InsertEdge(ref Edge root, Edge e)
+        
+        public void Render(Scene scene)
         {
-            Edge newEdge = new Edge(e);
-            Edge previous;
-            Edge current;
-
-            current = root; 
-            previous = null;
-
-            // 查找插入的位置  
-            while (current != null && (current.x < newEdge.x || (current.x == newEdge.x && current.deltaX < newEdge.deltaX)))
-            {
-                previous = current;
-                current = current.nextEdge;
-            }
-
-            newEdge.nextEdge = current;
-            if (previous == null)
-                root = newEdge;
-            else
-                previous.nextEdge = newEdge;  
-        }
-
-        void ProcessScanLine(int y, Vector4 pa, Vector4 pb, Vector4 pc, Vector4 pd, Color color)
-        {
-
-        }
-
-        public void Render(Camera camera, params Mesh[] meshes)
-        {
+            this.Clear();
             Matrix4x4 model = new Matrix4x4();
-            Matrix4x4 view = camera.LookAt();
-            Matrix4x4 projection = camera.Perspective();
+            Matrix4x4 view = scene.camera.LookAt();
+            Matrix4x4 projection = scene.camera.Perspective();
 
-            foreach (Mesh mesh in meshes)
+            Matrix4x4 matrixMVP = model * view * projection;
+
+            foreach (var triangle in scene.mesh.triangles)
             {
-                Matrix4x4 matrixMVP = model * view * projection;
+                Vertex vertexA = scene.mesh.Vertices[triangle.AIndex];
+                Vertex vertexB = scene.mesh.Vertices[triangle.BIndex];
+                Vertex vertexC = scene.mesh.Vertices[triangle.CIndex];
 
-                foreach (var triangle in mesh.triangles)
+                Vector4 pixelA = Project(vertexA.Position, matrixMVP);
+                Vector4 pixelB = Project(vertexB.Position, matrixMVP);
+                Vector4 pixelC = Project(vertexC.Position, matrixMVP);
+
+                DrawPoint(Project(scene.light.LightPos, matrixMVP), Color.FromArgb(255, 0, 0));
+
+                if (scene.renderState == Scene.RenderState.WireFrame)
                 {
-                    var vertexA = mesh.Vertices[triangle.AIndex];
-                    var vertexB = mesh.Vertices[triangle.BIndex];
-                    var vertexC = mesh.Vertices[triangle.CIndex];
-
-                    var pixelA = Project(vertexA, matrixMVP);
-                    var pixelB = Project(vertexB, matrixMVP);
-                    var pixelC = Project(vertexC, matrixMVP);
-
                     // 画线框
-                    //DrawLine(pixelA, pixelB, Color.FromArgb(1, 0, 0));
-                    //DrawLine(pixelB, pixelC, Color.FromArgb(1, 0, 0));
-                    //DrawLine(pixelC, pixelA, Color.FromArgb(1, 0, 0));
-                    
+                    DrawLine(vertexA, vertexB, pixelA, pixelB, scene.light);
+                    DrawLine(vertexB, vertexC, pixelB, pixelC, scene.light);
+                    DrawLine(vertexC, vertexA, pixelC, pixelA, scene.light);
+                }else if(scene.renderState == Scene.RenderState.GouraudShading)
+                { 
                     // 填充三角形
-                    DrawTriangle(pixelA, pixelB, pixelC, Color.FromArgb(1, 0, 0));
-                }
+                    DrawTriangle(vertexA, vertexB, vertexC, matrixMVP, scene.light);
+                } 
             }
         }
     }
