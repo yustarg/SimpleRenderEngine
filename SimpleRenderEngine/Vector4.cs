@@ -13,6 +13,14 @@ namespace SimpleRenderEngine
         public float Z { get; set; }
         public float W { get; set; }
 
+        public Vector4 Normalized {
+            get {
+                Vector4 n = new Vector4(this.X, this.Y, this.Z, this.W);
+                n.Normalize();
+                return n;
+            }
+        }
+
         public Vector4() { }
 
         public Vector4(float x, float y, float z, float w)

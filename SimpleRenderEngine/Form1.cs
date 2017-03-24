@@ -34,7 +34,7 @@ namespace SimpleRenderEngine
         private void InitSettings()
         {
             SetStyle(ControlStyles.UserPaint, true);
-            SetStyle(ControlStyles.AllPaintingInWmPaint, true); // 禁止擦除背景.
+            SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             SetStyle(ControlStyles.DoubleBuffer, true);
         }
 
@@ -80,9 +80,9 @@ namespace SimpleRenderEngine
                     this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
                 }
                 mouseX = e.X;
+                this.device.Clear();
+                this.Invalidate();
             }    
-            this.device.Clear();
-            this.Invalidate();
         }
 
         private void Form1_OnMouseWheel(object sender, MouseEventArgs e)
@@ -90,13 +90,18 @@ namespace SimpleRenderEngine
             float oriX = this.scene.camera.Position.X;
             float oriY = this.scene.camera.Position.Y;
             float oriZ = this.scene.camera.Position.Z;
+            Vector4 dir = this.scene.camera.Position.Normalized;
+            float x = Vector4.Dot(dir, new Vector4(1, 0, 0, 1)) * MoveSpeed;
+            float y = Vector4.Dot(dir, new Vector4(0, 1, 0, 1)) * MoveSpeed;
+            float z = Vector4.Dot(dir, new Vector4(0, 0, 1, 1)) * MoveSpeed;
+
             if (e.Delta > 0)
             {
-                this.scene.UpdateCameraPos(new Vector4(oriX, oriY, oriZ + MoveSpeed, 1));
+                this.scene.UpdateCameraPos(new Vector4(oriX + x, oriY + y, oriZ + z, 1));
             }
             else
             {
-                this.scene.UpdateCameraPos(new Vector4(oriX, oriY, oriZ - MoveSpeed, 1));
+                this.scene.UpdateCameraPos(new Vector4(oriX - x, oriY - y, oriZ - z, 1));
             }
             this.device.Clear();
             this.Invalidate();
