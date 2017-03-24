@@ -140,5 +140,33 @@ namespace SimpleRenderEngine
 	        this.M[3, 0] = this.M[3, 1] = this.M[3, 2] = 0.0f;	
 	        this.M[3, 3] = 1.0f;
         }
+
+        public void SetRotate(float degreeX, float degreeY, float degreeZ)
+        {
+            degreeX = degreeX * (float)Math.PI / 180;
+            degreeY = degreeY * (float)Math.PI / 180;
+            degreeZ = degreeZ * (float)Math.PI / 180;
+            Matrix4x4 z = new Matrix4x4();
+            z.M[0, 0] = (float)Math.Cos(degreeZ);
+            z.M[0, 1] = -(float)Math.Sin(degreeZ);
+            z.M[1, 0] = (float)Math.Sin(degreeZ);
+            z.M[1, 1] = (float)Math.Cos(degreeZ);
+            Matrix4x4 x = new Matrix4x4();
+            x.M[1, 1] = (float)Math.Cos(degreeX);
+            x.M[1, 2] = -(float)Math.Sin(degreeX);
+            x.M[2, 1] = (float)Math.Sin(degreeX);
+            x.M[2, 2] = (float)Math.Cos(degreeX);
+            Matrix4x4 y = new Matrix4x4();
+            y.M[0, 0] = (float)Math.Cos(degreeY);
+            y.M[0, 2] = (float)Math.Sin(degreeY);
+            y.M[2, 0] = -(float)Math.Sin(degreeY);
+            y.M[2, 2] = (float)Math.Cos(degreeY);
+
+            this.SetIdentity();
+            Matrix4x4 final = y * x * z;
+            for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
+                    this.M[i, j] = final.M[i, j];
+        }
     }
 }

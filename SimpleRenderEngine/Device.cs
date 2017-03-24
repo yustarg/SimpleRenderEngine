@@ -21,6 +21,11 @@ namespace SimpleRenderEngine
             Clear();
         }
 
+        public void UpdateBmp(Bitmap bmp)
+        {
+            this.bmp = bmp;
+        }
+
         public int GetHeight()
         {
             return this.bmp.Height;
@@ -33,9 +38,6 @@ namespace SimpleRenderEngine
 
         public void Clear()
         {
-            for (int i = 0; i < this.bmp.Width; i++)
-                for (int j = 0; j < this.bmp.Height; j++)
-                    this.bmp.SetPixel(i, j, Color.CadetBlue);
             for (int index = 0; index < depthBuffer.Length; index++)
             {
                 depthBuffer[index] = float.MaxValue;
@@ -64,7 +66,7 @@ namespace SimpleRenderEngine
         {
             Vector4 val = new Vector4();
             float rhw = 1.0f / x.W;
-            val.X = (1.0f - x.X * rhw) * this.bmp.Width * 0.5f;
+            val.X = (1.0f + x.X * rhw) * this.bmp.Width * 0.5f;
             val.Y = (1.0f - x.Y * rhw) * this.bmp.Height * 0.5f;
             val.Z = x.Z * rhw;
             val.W = 1.0f;
@@ -112,6 +114,8 @@ namespace SimpleRenderEngine
             int y0 = (int)point0.Y;
             int x1 = (int)point1.X;
             int y1 = (int)point1.Y;
+            float z1 = point0.Z;
+            float z2 = point1.Z;
 
             int dx = x1 - x0;
             int dy = y1 - y0;
@@ -138,7 +142,8 @@ namespace SimpleRenderEngine
                 {
                     vertexColor = MathUtil.ColorInterp(v1.Color, v2.Color, ratio);
                 }
-                DrawPoint(new Vector4((int)x, (int)y, 0, 0), MathUtil.AddColor(vertexColor, lightColor));
+                float z = MathUtil.Interp(z1, z2, ratio);
+                DrawPoint(new Vector4((int)x, (int)y, z, 0), MathUtil.AddColor(vertexColor, lightColor));
                 x += xInc;
                 y += yInc;
             }
@@ -156,9 +161,15 @@ namespace SimpleRenderEngine
         
         public void Render(Scene scene)
         {
-            this.Clear();
-            Matrix4x4 model = new Matrix4x4();
-            Matrix4x4 view = scene.camera.LookAt();
+            Matrix4x4 translate = new Matrix4x4();
+            translate.SetTranslate(0, 0, 0);
+            Matrix4x4 scale = new Matrix4x4();
+            scale.SetScale(1, 1, 1);
+            Matrix4x4 rotate = new Matrix4x4();
+            rotate.SetRotate(0, 0, 0);
+            Matrix4x4 model = scale * rotate * translate;
+            //Matrix4x4 view = scene.camera.LookAt();
+            Matrix4x4 view = scene.camera.FPSView();
             Matrix4x4 projection = scene.camera.Perspective();
 
             Matrix4x4 matrixMVP = model * view * projection;
@@ -173,7 +184,7 @@ namespace SimpleRenderEngine
                 Vector4 pixelB = Project(vertexB.Position, matrixMVP);
                 Vector4 pixelC = Project(vertexC.Position, matrixMVP);
 
-                DrawPoint(Project(scene.light.LightPos, matrixMVP), Color.FromArgb(255, 0, 0));
+                //DrawPoint(Project(scene.light.LightPos, matrixMVP), Color.FromArgb(255, 0, 0));
 
                 if (scene.renderState == Scene.RenderState.WireFrame)
                 {

@@ -12,9 +12,8 @@ namespace SimpleRenderEngine
 {
     public partial class Form1 : Form
     {
-        private const float PI = 3.1415926f; 
-        
         private Bitmap bmp;
+        private Graphics g;
         private Device device;
         private Scene scene;
         
@@ -29,76 +28,7 @@ namespace SimpleRenderEngine
         {
             bmp = new Bitmap(this.Width, this.Height);
             device = new Device(bmp);
-            scene = new Scene();
-            scene.renderState = Scene.RenderState.WireFrame;
-            InitCamera();
-            InitMesh();
-            InitLight();
-        }
-
-        private void InitMesh()
-        {
-            scene.mesh = new Mesh("Cube", @"E:\SimpleRenderEngine\SimpleRenderEngine\SimpleRenderEngine\textures\background.jpg");
-            //Vector4[] vertices = new Vector4[8] {
-            //    new Vector4(-1, -1, -1, 1),
-            //    new Vector4(1, -1, -1, 1),
-            //    new Vector4(1, 1, -1, 1),
-            //    new Vector4(-1, 1, -1, 1),
-            //    new Vector4(-1, -1, 1, 1),
-            //    new Vector4(1, -1, 1, 1),
-            //    new Vector4(1, 1, 1, 1),
-            //    new Vector4(-1, 1, 1, 1),
-            //};
-            
-            // pos, normal, uv, color  法线方向按上下左右前后排列
-            Vertex[] vertices = new Vertex[24] {
-                new Vertex(new Vector4(-1, -1, -1, 1), new Vector4(0, -1, 0, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(255, 0, 0)),
-                new Vertex(new Vector4(-1, -1, -1, 1), new Vector4(-1, 0, 0, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(255, 0, 0)),
-                new Vertex(new Vector4(-1, -1, -1, 1), new Vector4(0, 0, -1, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(255, 0, 0)),
-                
-                new Vertex(new Vector4(1, -1, -1, 1), new Vector4(0, -1, 0, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(0, 255, 0)),
-                new Vertex(new Vector4(1, -1, -1, 1), new Vector4(1, 0, 0, 1),  new Vector4(0, 0, 0, 0), Color.FromArgb(0, 255, 0)),
-                new Vertex(new Vector4(1, -1, -1, 1), new Vector4(0, 0, -1, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(0, 255, 0)),
-                  
-                new Vertex(new Vector4(1, 1, -1, 1), new Vector4(0, 1, 0, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(0, 0, 255)),
-                new Vertex(new Vector4(1, 1, -1, 1), new Vector4(1, 0, 0, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(0, 0, 255)),
-                new Vertex(new Vector4(1, 1, -1, 1), new Vector4(0, 0, -1, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(0, 0, 255)),
-
-                new Vertex(new Vector4(-1, 1, -1, 1), new Vector4(0, 1, 0, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(255, 0, 0)),
-                new Vertex(new Vector4(-1, 1, -1, 1), new Vector4(-1, 0, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(255, 0, 0)),
-                new Vertex(new Vector4(-1, 1, -1, 1), new Vector4(0, 0, -1, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(255, 0, 0)),
-                
-                new Vertex(new Vector4(-1, -1, 1, 1), new Vector4(0, -1, 0, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(0, 255, 0)),
-                new Vertex(new Vector4(-1, -1, 1, 1), new Vector4(-1, 0, 0, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(0, 255, 0)),
-                new Vertex(new Vector4(-1, -1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(0, 0, 0, 0), Color.FromArgb(0, 255, 0)),
-                
-                new Vertex(new Vector4(1, -1, 1, 1), new Vector4(0, -1, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(0, 0, 255)),
-                new Vertex(new Vector4(1, -1, 1, 1), new Vector4(1, 0, 0, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(0, 0, 255)),
-                new Vertex(new Vector4(1, -1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(1, 0, 0, 0), Color.FromArgb(0, 0, 255)),
-                
-                new Vertex(new Vector4(1, 1, 1, 1), new Vector4(0, 1, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(255, 0, 0)),
-                new Vertex(new Vector4(1, 1, 1, 1), new Vector4(1, 0, 0, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(255, 0, 0)),
-                new Vertex(new Vector4(1, 1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(1, 1, 0, 0), Color.FromArgb(255, 0, 0)),
-                
-                new Vertex(new Vector4(-1, 1, 1, 1), new Vector4(0, 1, 0, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(255, 255, 0)),
-                new Vertex(new Vector4(-1, 1, 1, 1), new Vector4(-1, 0, 0, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(255, 255, 0)),
-                new Vertex(new Vector4(-1, 1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(0, 1, 0, 0), Color.FromArgb(255, 255, 0)),
-            };
-
-            scene.mesh.SetVertices(vertices);
-        }
-
-        private void InitCamera()
-        {
-            scene.camera = new Camera(PI * 0.5f, (float)this.Width / (float)this.Height, 1.0f, 500.0f);
-            scene.camera.Position = new Vector4(5, 5, -5, 1);
-            scene.camera.Target = new Vector4(0, 0, 1, 1);
-        }
-
-        private void InitLight()
-        {
-            scene.light = new DirectionalLight(new Vector4(-2, 2, 0, 1), Color.FromArgb(255, 255, 255));
-            scene.light.IsEnable = false;
+            scene = new Scene(this.Width, this.Height);
         }
 
         private void InitSettings()
@@ -110,10 +40,13 @@ namespace SimpleRenderEngine
 
         private void Form1_Paint(object sender, System.Windows.Forms.PaintEventArgs pe)
         {
-            Graphics g = pe.Graphics;
+            g = pe.Graphics;
+            g.Clear(Color.LightGreen); 
             device.Render(scene);
             Rectangle rg = new Rectangle(0, 0, this.Width, this.Height);
             g.DrawImage(bmp, rg);
+            bmp = new Bitmap(this.Width, this.Height);
+            device.UpdateBmp(bmp);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -126,6 +59,7 @@ namespace SimpleRenderEngine
         {
             if (this.radioButton1.Checked)
             {
+                this.device.Clear();
                 this.scene.renderState = Scene.RenderState.WireFrame;
                 this.Invalidate();
             }
@@ -136,6 +70,7 @@ namespace SimpleRenderEngine
         {
             if (this.radioButton2.Checked)
             {
+                this.device.Clear(); 
                 this.scene.renderState = Scene.RenderState.GouraudShading;
                 this.Invalidate();
             }
@@ -146,6 +81,7 @@ namespace SimpleRenderEngine
         {
             if (this.radioButton3.Checked)
             {
+                this.device.Clear();
                 this.scene.renderState = Scene.RenderState.TextureMapping;
                 this.Invalidate();
             }
@@ -157,6 +93,7 @@ namespace SimpleRenderEngine
             this.hScrollBar1.Visible = checkBox1.Checked;
             this.hScrollBar1.Value = (int)(0.2f * this.hScrollBar1.Maximum);
             this.scene.light.IsEnable = checkBox1.Checked;
+            this.device.Clear();
             this.Invalidate();
         }
 
@@ -164,7 +101,43 @@ namespace SimpleRenderEngine
         {
             float ratio = (float)this.hScrollBar1.Value / (float)this.hScrollBar1.Maximum;
             this.scene.light.Kd = ratio;
+            this.device.Clear();
             this.Invalidate();
         }
+
+
+        private const float MoveSpeed = 0.1f;
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            Console.WriteLine("Form1_KeyDown !!!!!" + keyData);
+            if (keyData == Keys.W)
+            {
+                this.scene.UpdateCameraPos(new Vector4(0, 0, MoveSpeed, 0));
+            }
+            else if (keyData == Keys.A)
+            {
+                this.scene.UpdateCameraPos(new Vector4(-MoveSpeed, 0, 0, 0));
+            }
+            else if (keyData == Keys.S)
+            {
+                this.scene.UpdateCameraPos(new Vector4(0, 0, -MoveSpeed, 0));
+            }
+            else if (keyData == Keys.D)
+            {
+                this.scene.UpdateCameraPos(new Vector4(MoveSpeed, 0, 0, 0));
+            }
+            else if (keyData == Keys.Q)
+            {
+                this.scene.UpdateCameraPos(new Vector4(0, MoveSpeed, 0, 0));
+            }
+            else if (keyData == Keys.E)
+            {
+                this.scene.UpdateCameraPos(new Vector4(0, -MoveSpeed, 0, 0));
+            }
+            this.device.Clear();
+            this.Invalidate();
+            return true;
+        }
+
     }
 }

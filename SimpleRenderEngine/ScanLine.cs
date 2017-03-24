@@ -30,6 +30,8 @@ namespace SimpleRenderEngine
         // 需要屏幕坐标
         public void ProcessScanLine(Vertex[] vertices, Matrix4x4 mvp, Scene scene)
         {
+            int yMin = this.height; 
+            int YMax = 0;
             for (int i = 0; i < vertices.Length; i++)
             {
                 for (int j = i + 1; j < vertices.Length; j++)
@@ -38,6 +40,11 @@ namespace SimpleRenderEngine
                     Vector4 screen2 = this.device.Project(vertices[j].Position, mvp);
                     if (screen1.Y != screen2.Y)
                     {
+                        if (screen1.Y > YMax) YMax = (int)screen1.Y;
+                        if (screen2.Y > YMax) YMax = (int)screen2.Y;
+                        if (screen1.Y < yMin) yMin = (int)screen1.Y;
+                        if (screen2.Y < yMin) yMin = (int)screen2.Y;
+
                         int x1 = (int)screen1.X;
                         int y1 = (int)screen1.Y;
                         int x2 = (int)screen2.X;
@@ -59,7 +66,7 @@ namespace SimpleRenderEngine
 
             // 置空活动边表
             AEL = new Edge();
-            for (int i = 0; i < this.height; i++)
+            for (int i = yMin; i < YMax; i++)
             {
                 //if (ET[i].nextEdge != null)
                 {

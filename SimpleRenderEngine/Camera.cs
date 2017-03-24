@@ -10,6 +10,9 @@ namespace SimpleRenderEngine
     {
         public Vector4 Position { get; set; }
         public Vector4 Target { get; set; }
+        public Vector4 Up { get; set; }
+        public float Pitch { get; set; }
+        public float Yaw { get; set; }
         public float fov { get; set; }
         public float aspect { get; set; }
         public float zn { get; set; }
@@ -29,11 +32,10 @@ namespace SimpleRenderEngine
         {
             Matrix4x4 view = new Matrix4x4();
             Vector4 xaxis, yaxis, zaxis;
-            Vector4 up = new Vector4(0, 1, 0, 1);
 
             zaxis = Target - Position;
             zaxis.Normalize();
-            xaxis = Vector4.Cross(up, zaxis);
+            xaxis = Vector4.Cross(Up, zaxis);
             xaxis.Normalize();
             yaxis = Vector4.Cross(zaxis, xaxis);
 
@@ -54,6 +56,49 @@ namespace SimpleRenderEngine
 
             view.M[0, 3] = view.M[1, 3] = view.M[2, 3] = 0.0f;
             view.M[3, 3] = 1.0f;
+
+            return view;
+        }
+
+        public Matrix4x4 FPSView()
+        {
+            float pitch = this.Pitch * (float)Math.PI / 180;
+            float yaw = this.Yaw * (float)Math.PI / 180;
+
+            float cosPitch = (float)Math.Cos(pitch);
+            float sinPitch = (float)Math.Sin(pitch);
+            float cosYaw = (float)Math.Cos(yaw);
+            float sinYaw = (float)Math.Sin(yaw);
+ 
+            Vector4 xaxis = new Vector4(cosYaw, 0, -sinYaw, 0);
+            Vector4 yaxis = new Vector4(sinYaw * sinPitch, cosPitch, cosYaw * sinPitch, 0);
+            Vector4 zaxis = new Vector4(sinYaw * cosPitch, -sinPitch, cosPitch * cosYaw, 0);
+ 
+            Matrix4x4 view = new Matrix4x4();
+
+            view.M[0, 0] = xaxis.X;
+            view.M[1, 0] = xaxis.Y;
+            view.M[2, 0] = xaxis.Z;
+            view.M[3, 0] = -Vector4.Dot(xaxis, Position);
+
+            view.M[0, 1] = yaxis.X;
+            view.M[1, 1] = yaxis.Y;
+            view.M[2, 1] = yaxis.Z;
+            view.M[3, 1] = -Vector4.Dot(yaxis, Position);
+
+            view.M[0, 2] = zaxis.X;
+            view.M[1, 2] = zaxis.Y;
+            view.M[2, 2] = zaxis.Z;
+            view.M[3, 2] = -Vector4.Dot(zaxis, Position);
+
+            view.M[0, 3] = view.M[1, 3] = view.M[2, 3] = 0.0f;
+            view.M[3, 3] = 1.0f;
+
+            //    vec4(       xaxis.x,            yaxis.x,            zaxis.x,      0 ),
+            //    vec4(       xaxis.y,            yaxis.y,            zaxis.y,      0 ),
+            //    vec4(       xaxis.z,            yaxis.z,            zaxis.z,      0 ),
+            //    vec4( -dot( xaxis, eye ), -dot( yaxis, eye ), -dot( zaxis, eye ), 1 )
+            //};
 
             return view;
         }

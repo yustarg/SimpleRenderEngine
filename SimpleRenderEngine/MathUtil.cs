@@ -9,6 +9,8 @@ namespace SimpleRenderEngine
 {
     public class MathUtil
     {
+        public const float PI = 3.1415926f; 
+        
         public static float Clamp01(float t)
         {
             if (t < 0) return 0;
