@@ -168,8 +168,8 @@ namespace SimpleRenderEngine
             Matrix4x4 rotate = new Matrix4x4();
             rotate.SetRotate(0, 0, 0);
             Matrix4x4 model = scale * rotate * translate;
-            //Matrix4x4 view = scene.camera.LookAt();
-            Matrix4x4 view = scene.camera.FPSView();
+            Matrix4x4 view = scene.camera.LookAt();
+            //Matrix4x4 view = scene.camera.FPSView();
             Matrix4x4 projection = scene.camera.Perspective();
 
             Matrix4x4 matrixMVP = model * view * projection;

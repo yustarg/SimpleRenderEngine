@@ -51,7 +51,55 @@ namespace SimpleRenderEngine
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.Paint += new PaintEventHandler(Form1_Paint); // 自己手动添加处理事件
+            this.Paint += new PaintEventHandler(Form1_Paint);
+            this.MouseMove += new MouseEventHandler(Form1_OnMouseMove);
+            this.MouseWheel += new MouseEventHandler(Form1_OnMouseWheel);
+        }
+
+        private const float MoveSpeed = 0.5f;
+        private const float RotateSpeed = 2f * (float)Math.PI / 180f;
+        private int mouseX = 0;
+        private int mouseY = 0;
+        private void Form1_OnMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                float oriX = this.scene.camera.Position.X;
+                float oriZ = this.scene.camera.Position.Z;
+                float oriY = this.scene.camera.Position.Y;
+                if (e.X - mouseX > 0)
+                {
+                    float newX = (float)(oriX * Math.Cos(RotateSpeed) - oriZ * Math.Sin(RotateSpeed));
+                    float newZ = (float)(oriX * Math.Sin(RotateSpeed) + oriZ * Math.Cos(RotateSpeed));
+                    this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
+                }
+                else
+                {
+                    float newX = (float)(oriX * Math.Cos(-RotateSpeed) - oriZ * Math.Sin(-RotateSpeed));
+                    float newZ = (float)(oriX * Math.Sin(-RotateSpeed) + oriZ * Math.Cos(-RotateSpeed));
+                    this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
+                }
+                mouseX = e.X;
+            }    
+            this.device.Clear();
+            this.Invalidate();
+        }
+
+        private void Form1_OnMouseWheel(object sender, MouseEventArgs e)
+        {
+            float oriX = this.scene.camera.Position.X;
+            float oriY = this.scene.camera.Position.Y;
+            float oriZ = this.scene.camera.Position.Z;
+            if (e.Delta > 0)
+            {
+                this.scene.UpdateCameraPos(new Vector4(oriX, oriY, oriZ + MoveSpeed, 1));
+            }
+            else
+            {
+                this.scene.UpdateCameraPos(new Vector4(oriX, oriY, oriZ - MoveSpeed, 1));
+            }
+            this.device.Clear();
+            this.Invalidate();
         }
 
         // Wire Frame
@@ -104,40 +152,5 @@ namespace SimpleRenderEngine
             this.device.Clear();
             this.Invalidate();
         }
-
-
-        private const float MoveSpeed = 0.1f;
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
-        {
-            Console.WriteLine("Form1_KeyDown !!!!!" + keyData);
-            if (keyData == Keys.W)
-            {
-                this.scene.UpdateCameraPos(new Vector4(0, 0, MoveSpeed, 0));
-            }
-            else if (keyData == Keys.A)
-            {
-                this.scene.UpdateCameraPos(new Vector4(-MoveSpeed, 0, 0, 0));
-            }
-            else if (keyData == Keys.S)
-            {
-                this.scene.UpdateCameraPos(new Vector4(0, 0, -MoveSpeed, 0));
-            }
-            else if (keyData == Keys.D)
-            {
-                this.scene.UpdateCameraPos(new Vector4(MoveSpeed, 0, 0, 0));
-            }
-            else if (keyData == Keys.Q)
-            {
-                this.scene.UpdateCameraPos(new Vector4(0, MoveSpeed, 0, 0));
-            }
-            else if (keyData == Keys.E)
-            {
-                this.scene.UpdateCameraPos(new Vector4(0, -MoveSpeed, 0, 0));
-            }
-            this.device.Clear();
-            this.Invalidate();
-            return true;
-        }
-
     }
 }

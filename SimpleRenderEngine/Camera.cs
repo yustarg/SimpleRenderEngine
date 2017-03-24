@@ -38,6 +38,7 @@ namespace SimpleRenderEngine
             xaxis = Vector4.Cross(Up, zaxis);
             xaxis.Normalize();
             yaxis = Vector4.Cross(zaxis, xaxis);
+            yaxis.Normalize();
 
             view.M[0, 0] = xaxis.X;
             view.M[1, 0] = xaxis.Y;
@@ -93,12 +94,6 @@ namespace SimpleRenderEngine
 
             view.M[0, 3] = view.M[1, 3] = view.M[2, 3] = 0.0f;
             view.M[3, 3] = 1.0f;
-
-            //    vec4(       xaxis.x,            yaxis.x,            zaxis.x,      0 ),
-            //    vec4(       xaxis.y,            yaxis.y,            zaxis.y,      0 ),
-            //    vec4(       xaxis.z,            yaxis.z,            zaxis.z,      0 ),
-            //    vec4( -dot( xaxis, eye ), -dot( yaxis, eye ), -dot( zaxis, eye ), 1 )
-            //};
 
             return view;
         }

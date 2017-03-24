@@ -78,8 +78,8 @@ namespace SimpleRenderEngine
         private void InitCamera(int width, int height)
         {
             this.camera = new Camera(MathUtil.PI * 0.5f, (float)width / (float)height, 1.0f, 500.0f);
-            this.camera.Position = new Vector4(0, 0, -5, 1);
-            this.camera.Target = new Vector4(0, 0, 1, 1);
+            this.camera.Position = new Vector4(0, 5, -5, 1);
+            this.camera.Target = new Vector4(0, 0, 0, 1);
             this.camera.Up = new Vector4(0, 1, 0, 1);
             this.camera.Pitch = 0;
             this.camera.Yaw = 0;
@@ -91,9 +91,14 @@ namespace SimpleRenderEngine
             this.light.IsEnable = false;
         }
 
-        public void UpdateCameraPos(Vector4 delta)
+        public void UpdateCameraPos(Vector4 pos)
         {
-            this.camera.Position += delta;
+            this.camera.Position = pos;
+        }
+
+        public void UpdateCameraRotation(float degree)
+        {
+            this.camera.Yaw += degree;
         }
     }
 }
