@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,12 +11,14 @@ namespace SimpleRenderEngine
     public class Device
     {
         private Bitmap bmp;
+        private BitmapData data;
         private ScanLine scanLine;
         private readonly float[] depthBuffer;
 
         public Device(Bitmap bmp)
         {
             this.bmp = bmp;
+            
             this.scanLine = new ScanLine(this);
             depthBuffer = new float[bmp.Width * bmp.Height];
             Clear();
@@ -38,10 +41,31 @@ namespace SimpleRenderEngine
 
         public void Clear()
         {
+            // clear depth buffer
             for (int index = 0; index < depthBuffer.Length; index++)
             {
                 depthBuffer[index] = float.MaxValue;
             }
+
+            this.data = this.bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
+                                                ImageLockMode.ReadWrite, bmp.PixelFormat); 
+            unsafe
+            {
+                byte* ptr = (byte*)(data.Scan0);
+                for (int i = 0; i < data.Height; i++)
+                {
+                    for (int j = 0; j < data.Width; j++)
+                    {
+                        // write the logic implementation here 
+                        *ptr = 128;
+                        *(ptr + 1) = 128;
+                        *(ptr + 2) = 128;
+                        ptr += 3;
+                    }
+                    ptr += data.Stride - data.Width * 3;
+                }
+            }
+            this.bmp.UnlockBits(data);    
         }
 
         public void PutPixel(int x, int y, float z, Color color)
@@ -51,7 +75,19 @@ namespace SimpleRenderEngine
             if (depthBuffer[index] < z) return;
 
             depthBuffer[index] = z;
-            this.bmp.SetPixel(x, y, color);
+            //this.bmp.SetPixel(x, y, color);
+
+            this.data = this.bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
+                                                ImageLockMode.ReadWrite, bmp.PixelFormat);
+            unsafe
+            {
+                byte* ptr = (byte*)(data.Scan0);
+                byte* row = ptr + (y * data.Stride);
+                row[x * 3] = color.B;
+                row[x * 3 + 1] = color.G;
+                row[x * 3 + 2] = color.R;
+            }
+            this.bmp.UnlockBits(data);
         }
 
         public Vector4 Project(Vector4 coord, Matrix4x4 mvp)
@@ -75,10 +111,7 @@ namespace SimpleRenderEngine
 
         public void DrawPoint(Vector4 point, Color c)
         {
-            if (point.X >= 0 && point.Y >= 0 && point.X < bmp.Width && point.Y < bmp.Height)
-            {
-                PutPixel((int)point.X, (int)point.Y, point.Z, c);
-            }
+            PutPixel((int)point.X, (int)point.Y, point.Z, c);
         }
 
         /*
@@ -155,16 +188,6 @@ namespace SimpleRenderEngine
             vertices[0] = p1;
             vertices[1] = p2;
             vertices[2] = p3;
-
-            Vector4 v1 = mvp.Apply(p1.Position);
-            Vector4 v2 = mvp.Apply(p2.Position);
-            Vector4 v3 = mvp.Apply(p3.Position);
-
-            int val1 = this.CheckCVV(v1);
-            int val2 = this.CheckCVV(v2);
-            int val3 = this.CheckCVV(v3);
-
-            Console.WriteLine("CheckCVV {1}, {2}, {3}", val1, val2, val3);
 
             this.scanLine.ProcessScanLine(vertices, mvp, scene);
         }

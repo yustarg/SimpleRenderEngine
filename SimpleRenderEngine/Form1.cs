@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace SimpleRenderEngine
         private Graphics g;
         private Device device;
         private Scene scene;
-        
+
         public Form1()
         {
             InitializeComponent();
@@ -26,7 +27,7 @@ namespace SimpleRenderEngine
 
         private void InitScene()
         {
-            bmp = new Bitmap(this.Width, this.Height);
+            bmp = new Bitmap(this.Width, this.Height, PixelFormat.Format24bppRgb);
             device = new Device(bmp);
             scene = new Scene(this.Width, this.Height);
         }
@@ -40,13 +41,10 @@ namespace SimpleRenderEngine
 
         private void Form1_Paint(object sender, System.Windows.Forms.PaintEventArgs pe)
         {
+            this.device.Clear();
             g = pe.Graphics;
-            g.Clear(Color.LightGreen); 
             device.Render(scene);
-            Rectangle rg = new Rectangle(0, 0, this.Width, this.Height);
-            g.DrawImage(bmp, rg);
-            bmp = new Bitmap(this.Width, this.Height);
-            device.UpdateBmp(bmp);
+            g.DrawImage(this.bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
         }
 
         private void Form1_Load(object sender, EventArgs e)

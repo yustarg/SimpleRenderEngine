@@ -14,10 +14,10 @@ namespace SimpleRenderEngine
         public Triangle[] triangles { get; set; }
         public Texture texture;
 
-        public Mesh(string name, string texPathing)
+        public Mesh(string name)
         {
             Name = name;
-            texture = new Texture(texPathing, 2048, 1206);
+            texture = new Texture(@"E:\Git\SimpleRenderEngine\SimpleRenderEngine\textures\background.jpg", 2048, 1206);
         }
 
         public void SetVertices(Vertex[] vertices)
