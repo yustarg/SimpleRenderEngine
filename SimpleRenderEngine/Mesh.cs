@@ -58,6 +58,8 @@ namespace SimpleRenderEngine
         public Vector4 UV { get; set; }
         public Color Color { get; set; }
 
+        public Vertex() { }
+        
         public Vertex(Vector4 pos, Vector4 normal, Vector4 uv, Color col)
         {
             this.Position = pos;

@@ -109,7 +109,7 @@ namespace SimpleRenderEngine
 
         // DDA 画线算法
         public void DrawLine(Vertex v1, Vertex v2, Vector4 point0, Vector4 point1, Scene scene)
-        {
+        {   
             int x0 = (int)point0.X;
             int y0 = (int)point0.Y;
             int x1 = (int)point1.X;
@@ -155,9 +155,34 @@ namespace SimpleRenderEngine
             vertices[0] = p1;
             vertices[1] = p2;
             vertices[2] = p3;
+
+            Vector4 v1 = mvp.Apply(p1.Position);
+            Vector4 v2 = mvp.Apply(p2.Position);
+            Vector4 v3 = mvp.Apply(p3.Position);
+
+            int val1 = this.CheckCVV(v1);
+            int val2 = this.CheckCVV(v2);
+            int val3 = this.CheckCVV(v3);
+
+            Console.WriteLine("CheckCVV {1}, {2}, {3}", val1, val2, val3);
+
             this.scanLine.ProcessScanLine(vertices, mvp, scene);
         }
 
+
+        // 检查齐次坐标同 cvv 的边界用于视锥裁剪
+        public int CheckCVV(Vector4 v)
+        {
+	        float w = v.W;
+	        int check = 0;
+	        if (v.Z < 0.0f) check |= 1;
+	        if (v.Z >  w) check |= 2;
+	        if (v.X < -w) check |= 4;
+	        if (v.X >  w) check |= 8;
+	        if (v.Y < -w) check |= 16;
+	        if (v.Y >  w) check |= 32;
+	        return check;
+        }
         
         public void Render(Scene scene)
         {
