@@ -14,13 +14,17 @@ namespace SimpleRenderEngine
         private BitmapData data;
         private ScanLine scanLine;
         private HodgmanClip clip;
+        private Vector4 wMin;   // 裁剪空间(-1, -1, -1)
+        private Vector4 wMax;   // 裁剪空间(1, 1, 1)
+        private Scene scene;
         private readonly float[] depthBuffer;
 
         public Device(Bitmap bmp)
         {
             this.bmp = bmp;
-            this.clip = new HodgmanClip();
             this.scanLine = new ScanLine(this);
+            wMin = new Vector4(-1, -1, -1, 1);
+            wMax = new Vector4(1, 1, 1, 1);
             depthBuffer = new float[bmp.Width * bmp.Height];
             Clear();
         }
@@ -94,8 +98,29 @@ namespace SimpleRenderEngine
         public Vector4 Project(Vector4 coord, Matrix4x4 mvp)
         {
             Vector4 point = mvp.Apply(coord);
-            Vector4 after = this.Homogenize(point);
-            return after;
+            Vector4 viewPort = Homogenize(point);
+            return viewPort;
+        }
+
+        public Vector4 ClipSpace(Vector4 x)
+        {
+            Vector4 val = this.GetMvpMatrix().Apply(x);
+            float rhw = 1.0f / val.W;
+            val.X = val.X * rhw;
+            val.Y = val.Y * rhw;
+            val.Z = val.Z * rhw;
+            val.W = 1.0f;
+            return val;
+        }
+
+        public Vector4 ViewPort(Vector4 x)
+        {
+            Vector4 val = new Vector4();
+            val.X = (1.0f + x.X) * this.bmp.Width * 0.5f;
+            val.Y = (1.0f - x.Y) * this.bmp.Height * 0.5f;
+            val.Z = x.Z;
+            val.W = 1.0f;
+            return val;
         }
 
         // 归一化，得到屏幕坐标
@@ -196,22 +221,7 @@ namespace SimpleRenderEngine
             this.scanLine.ProcessScanLine(vertices, mvp, scene);
         }
 
-
-        // 检查齐次坐标同 cvv 的边界用于视锥裁剪
-        public int CheckCVV(Vector4 v)
-        {
-	        float w = v.W;
-	        int check = 0;
-	        if (v.Z < 0.0f) check |= 1;
-	        if (v.Z >  w) check |= 2;
-	        if (v.X < -w) check |= 4;
-	        if (v.X >  w) check |= 8;
-	        if (v.Y < -w) check |= 16;
-	        if (v.Y >  w) check |= 32;
-	        return check;
-        }
-        
-        public void Render(Scene scene)
+        public Matrix4x4 GetMvpMatrix()
         {
             Matrix4x4 translate = new Matrix4x4();
             translate.SetTranslate(0, 0, 0);
@@ -220,11 +230,17 @@ namespace SimpleRenderEngine
             Matrix4x4 rotate = new Matrix4x4();
             rotate.SetRotate(0, 0, 0);
             Matrix4x4 model = scale * rotate * translate;
-            Matrix4x4 view = scene.camera.LookAt();
+            Matrix4x4 view = this.scene.camera.LookAt();
             //Matrix4x4 view = scene.camera.FPSView();
-            Matrix4x4 projection = scene.camera.Perspective();
+            Matrix4x4 projection = this.scene.camera.Perspective();
 
-            Matrix4x4 matrixMVP = model * view * projection;
+            return model * view * projection;
+        }
+
+        public void Render(Scene scene)
+        {
+            this.scene = scene;
+            Matrix4x4 matrixMVP = GetMvpMatrix();
 
             foreach (var triangle in scene.mesh.triangles)
             {
@@ -232,43 +248,42 @@ namespace SimpleRenderEngine
                 Vertex vertexB = scene.mesh.Vertices[triangle.BIndex];
                 Vertex vertexC = scene.mesh.Vertices[triangle.CIndex];
 
-                Vector4 pixelA = Project(vertexA.Position, matrixMVP);
-                Vector4 pixelB = Project(vertexB.Position, matrixMVP);
-                Vector4 pixelC = Project(vertexC.Position, matrixMVP);
+                //Vector4 pixelA = Project(vertexA.Position, matrixMVP);
+                //Vector4 pixelB = Project(vertexB.Position, matrixMVP);
+                //Vector4 pixelC = Project(vertexC.Position, matrixMVP);
 
                 //DrawPoint(Project(scene.light.LightPos, matrixMVP), Color.FromArgb(255, 0, 0));
-                //clip = new HodgmanClip();
-                Vector4 wMin = new Vector4(-1, -1, -1, 1);
-                Vector4 wMax = new Vector4(1, 1, 1, 1);
-                List<Vector4> pIn = new List<Vector4>();
-                Vector4 a = matrixMVP.Apply(vertexA.Position);
-                Vector4 b = matrixMVP.Apply(vertexB.Position);
-                Vector4 c = matrixMVP.Apply(vertexC.Position);
 
-                pIn.Add(MathUtil.Vector4Divide(a, a.W));
-                pIn.Add(MathUtil.Vector4Divide(b, b.W));
-                pIn.Add(MathUtil.Vector4Divide(c, c.W));
+                List<Vertex> pIn = new List<Vertex>();
+                //Vector4 a = matrixMVP.Apply(vertexA.Position);
+                //Vector4 b = matrixMVP.Apply(vertexB.Position);
+                //Vector4 c = matrixMVP.Apply(vertexC.Position);
+
+                //pIn.Add(MathUtil.Vector4Divide(a, a.W));
+                //pIn.Add(MathUtil.Vector4Divide(b, b.W));
+                //pIn.Add(MathUtil.Vector4Divide(c, c.W));
+                pIn.Add(vertexA);
+                pIn.Add(vertexB);
+                pIn.Add(vertexC);
                 for (int i = 0; i < 6; i++)
                 {
-                    clip = new HodgmanClip();
+                    clip = new HodgmanClip(this);
                     clip.HodgmanPolygonClip((HodgmanClip.Boundary)i, wMin, wMax, pIn.ToArray());
                     pIn = clip.GetOutputList();
                 }
 
-                if (pIn.Count > 3)
-                {
-                    for (int i = 0; i < pIn.Count; i++)
-                    {
-                        Console.WriteLine("outPut ! " + pIn[i] + "  " + pIn[i]);
-
-                    }
-                }
                 if (scene.renderState == Scene.RenderState.WireFrame)
                 {
-                    // 画线框
-                    DrawLine(vertexA, vertexB, pixelA, pixelB, scene);
-                    DrawLine(vertexB, vertexC, pixelB, pixelC, scene);
-                    DrawLine(vertexC, vertexA, pixelC, pixelA, scene);
+                    // 画线框, 需要vertex的normal,pos,color
+                    //DrawLine(vertexA, vertexB, pixelA, pixelB, scene);
+                    //DrawLine(vertexB, vertexC, pixelB, pixelC, scene);
+                    //DrawLine(vertexC, vertexA, pixelC, pixelA, scene);
+                    Vertex start = pIn[pIn.Count - 1];
+                    for (int i = 0; i < pIn.Count; i++)
+                    {
+                        DrawLine(start, pIn[i], this.ViewPort(start.Position), this.ViewPort(pIn[i].Position), scene);
+                        start = pIn[i];
+                    }
                 }
                 else
                 {
