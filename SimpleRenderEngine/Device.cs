@@ -13,12 +13,13 @@ namespace SimpleRenderEngine
         private Bitmap bmp;
         private BitmapData data;
         private ScanLine scanLine;
+        private HodgmanClip clip;
         private readonly float[] depthBuffer;
 
         public Device(Bitmap bmp)
         {
             this.bmp = bmp;
-            
+            this.clip = new HodgmanClip();
             this.scanLine = new ScanLine(this);
             depthBuffer = new float[bmp.Width * bmp.Height];
             Clear();
@@ -111,7 +112,10 @@ namespace SimpleRenderEngine
 
         public void DrawPoint(Vector4 point, Color c)
         {
-            PutPixel((int)point.X, (int)point.Y, point.Z, c);
+            if (point.X >= 0 && point.Y >= 0 && point.X < bmp.Width && point.Y < bmp.Height)
+            {
+                PutPixel((int)point.X, (int)point.Y, point.Z, c);
+            }
         }
 
         /*
@@ -233,7 +237,32 @@ namespace SimpleRenderEngine
                 Vector4 pixelC = Project(vertexC.Position, matrixMVP);
 
                 //DrawPoint(Project(scene.light.LightPos, matrixMVP), Color.FromArgb(255, 0, 0));
+                //clip = new HodgmanClip();
+                Vector4 wMin = new Vector4(-1, -1, -1, 1);
+                Vector4 wMax = new Vector4(1, 1, 1, 1);
+                List<Vector4> pIn = new List<Vector4>();
+                Vector4 a = matrixMVP.Apply(vertexA.Position);
+                Vector4 b = matrixMVP.Apply(vertexB.Position);
+                Vector4 c = matrixMVP.Apply(vertexC.Position);
 
+                pIn.Add(MathUtil.Vector4Divide(a, a.W));
+                pIn.Add(MathUtil.Vector4Divide(b, b.W));
+                pIn.Add(MathUtil.Vector4Divide(c, c.W));
+                for (int i = 0; i < 6; i++)
+                {
+                    clip = new HodgmanClip();
+                    clip.HodgmanPolygonClip((HodgmanClip.Boundary)i, wMin, wMax, pIn.ToArray());
+                    pIn = clip.GetOutputList();
+                }
+
+                if (pIn.Count > 3)
+                {
+                    for (int i = 0; i < pIn.Count; i++)
+                    {
+                        Console.WriteLine("outPut ! " + pIn[i] + "  " + pIn[i]);
+
+                    }
+                }
                 if (scene.renderState == Scene.RenderState.WireFrame)
                 {
                     // 画线框
@@ -242,10 +271,10 @@ namespace SimpleRenderEngine
                     DrawLine(vertexC, vertexA, pixelC, pixelA, scene);
                 }
                 else
-                { 
+                {
                     // 填充三角形
                     DrawTriangle(vertexA, vertexB, vertexC, matrixMVP, scene);
-                } 
+                }
             }
         }
     }

@@ -71,6 +71,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="HodgmanClip.cs" />
     <Compile Include="MathUtil.cs" />
     <Compile Include="Matrix4x4.cs" />
     <Compile Include="Mesh.cs" />

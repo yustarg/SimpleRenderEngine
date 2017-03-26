@@ -80,7 +80,7 @@ namespace SimpleRenderEngine
                 mouseX = e.X;
                 this.device.Clear();
                 this.Invalidate();
-            }    
+            }
         }
 
         private void Form1_OnMouseWheel(object sender, MouseEventArgs e)
@@ -93,7 +93,7 @@ namespace SimpleRenderEngine
             float y = Vector4.Dot(dir, new Vector4(0, 1, 0, 1)) * MoveSpeed;
             float z = Vector4.Dot(dir, new Vector4(0, 0, 1, 1)) * MoveSpeed;
 
-            if (e.Delta > 0)
+            if (e.Delta < 0)
             {
                 this.scene.UpdateCameraPos(new Vector4(oriX + x, oriY + y, oriZ + z, 1));
             }
@@ -103,6 +103,24 @@ namespace SimpleRenderEngine
             }
             this.device.Clear();
             this.Invalidate();
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            float oriX = this.scene.camera.Position.X;
+            float oriY = this.scene.camera.Position.Y;
+            float oriZ = this.scene.camera.Position.Z;
+            if (keyData == Keys.W)
+            {
+                this.scene.UpdateCameraPos(new Vector4(oriX, oriY + MoveSpeed, oriZ, 1));
+            }
+            else if (keyData == Keys.S)
+            {
+                this.scene.UpdateCameraPos(new Vector4(oriX, oriY - MoveSpeed, oriZ, 1));
+            }
+            this.device.Clear();
+            this.Invalidate();
+            return true;
         }
 
         // Wire Frame
