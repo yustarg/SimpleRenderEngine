@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,13 +11,20 @@ namespace SimpleRenderEngine
     public class Device
     {
         private Bitmap bmp;
+        private BitmapData data;
         private ScanLine scanLine;
+        private HodgmanClip clip;
+        private Vector4 wMin;   // 裁剪空间(-1, -1, -1)
+        private Vector4 wMax;   // 裁剪空间(1, 1, 1)
+        private Scene scene;
         private readonly float[] depthBuffer;
 
         public Device(Bitmap bmp)
         {
             this.bmp = bmp;
             this.scanLine = new ScanLine(this);
+            wMin = new Vector4(-1, -1, -1, 1);
+            wMax = new Vector4(1, 1, 1, 1);
             depthBuffer = new float[bmp.Width * bmp.Height];
             Clear();
         }
@@ -38,10 +46,31 @@ namespace SimpleRenderEngine
 
         public void Clear()
         {
+            // clear depth buffer
             for (int index = 0; index < depthBuffer.Length; index++)
             {
                 depthBuffer[index] = float.MaxValue;
             }
+
+            this.data = this.bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
+                                                ImageLockMode.ReadWrite, bmp.PixelFormat); 
+            unsafe
+            {
+                byte* ptr = (byte*)(data.Scan0);
+                for (int i = 0; i < data.Height; i++)
+                {
+                    for (int j = 0; j < data.Width; j++)
+                    {
+                        // write the logic implementation here 
+                        *ptr = 128;
+                        *(ptr + 1) = 128;
+                        *(ptr + 2) = 128;
+                        ptr += 3;
+                    }
+                    ptr += data.Stride - data.Width * 3;
+                }
+            }
+            this.bmp.UnlockBits(data);    
         }
 
         public void PutPixel(int x, int y, float z, Color color)
@@ -51,14 +80,47 @@ namespace SimpleRenderEngine
             if (depthBuffer[index] < z) return;
 
             depthBuffer[index] = z;
-            this.bmp.SetPixel(x, y, color);
+            //this.bmp.SetPixel(x, y, color);
+
+            this.data = this.bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
+                                                ImageLockMode.ReadWrite, bmp.PixelFormat);
+            unsafe
+            {
+                byte* ptr = (byte*)(data.Scan0);
+                byte* row = ptr + (y * data.Stride);
+                row[x * 3] = color.B;
+                row[x * 3 + 1] = color.G;
+                row[x * 3 + 2] = color.R;
+            }
+            this.bmp.UnlockBits(data);
         }
 
         public Vector4 Project(Vector4 coord, Matrix4x4 mvp)
         {
             Vector4 point = mvp.Apply(coord);
-            Vector4 after = this.Homogenize(point);
-            return after;
+            Vector4 viewPort = Homogenize(point);
+            return viewPort;
+        }
+
+        public Vector4 ClipSpace(Vector4 x, Matrix4x4 mvp)
+        {
+            Vector4 val = mvp.Apply(x);
+            float rhw = 1.0f / val.W;
+            val.X = val.X * rhw;
+            val.Y = val.Y * rhw;
+            val.Z = val.Z * rhw;
+            val.W = 1.0f;
+            return val;
+        }
+
+        public Vector4 ViewPort(Vector4 x)
+        {
+            Vector4 val = new Vector4();
+            val.X = (1.0f + x.X) * this.bmp.Width * 0.5f;
+            val.Y = (1.0f - x.Y) * this.bmp.Height * 0.5f;
+            val.Z = x.Z;
+            val.W = 1.0f;
+            return val;
         }
 
         // 归一化，得到屏幕坐标
@@ -75,8 +137,10 @@ namespace SimpleRenderEngine
 
         public void DrawPoint(Vector4 point, Color c)
         {
-            if (point.X >= 0 && point.Y >= 0 && point.X < bmp.Width && point.Y < bmp.Height)
+            if (point.X >= 0 && point.Y >= 0 && point.X <= bmp.Width && point.Y <= bmp.Height)
             {
+                if (point.X == bmp.Width) point.X = point.X - 1;
+                if (point.Y == bmp.Height) point.Y = point.Y - 1;
                 PutPixel((int)point.X, (int)point.Y, point.Z, c);
             }
         }
@@ -156,35 +220,10 @@ namespace SimpleRenderEngine
             vertices[1] = p2;
             vertices[2] = p3;
 
-            Vector4 v1 = mvp.Apply(p1.Position);
-            Vector4 v2 = mvp.Apply(p2.Position);
-            Vector4 v3 = mvp.Apply(p3.Position);
-
-            int val1 = this.CheckCVV(v1);
-            int val2 = this.CheckCVV(v2);
-            int val3 = this.CheckCVV(v3);
-
-            Console.WriteLine("CheckCVV {1}, {2}, {3}", val1, val2, val3);
-
             this.scanLine.ProcessScanLine(vertices, mvp, scene);
         }
 
-
-        // 检查齐次坐标同 cvv 的边界用于视锥裁剪
-        public int CheckCVV(Vector4 v)
-        {
-	        float w = v.W;
-	        int check = 0;
-	        if (v.Z < 0.0f) check |= 1;
-	        if (v.Z >  w) check |= 2;
-	        if (v.X < -w) check |= 4;
-	        if (v.X >  w) check |= 8;
-	        if (v.Y < -w) check |= 16;
-	        if (v.Y >  w) check |= 32;
-	        return check;
-        }
-        
-        public void Render(Scene scene)
+        public Matrix4x4 GetMvpMatrix()
         {
             Matrix4x4 translate = new Matrix4x4();
             translate.SetTranslate(0, 0, 0);
@@ -193,11 +232,16 @@ namespace SimpleRenderEngine
             Matrix4x4 rotate = new Matrix4x4();
             rotate.SetRotate(0, 0, 0);
             Matrix4x4 model = scale * rotate * translate;
-            Matrix4x4 view = scene.camera.LookAt();
-            //Matrix4x4 view = scene.camera.FPSView();
-            Matrix4x4 projection = scene.camera.Perspective();
+            Matrix4x4 view = this.scene.camera.LookAt();
+            Matrix4x4 projection = this.scene.camera.Perspective();
 
-            Matrix4x4 matrixMVP = model * view * projection;
+            return model * view * projection;
+        }
+
+        public void Render(Scene scene)
+        {
+            this.scene = scene;
+            Matrix4x4 matrixMVP = this.GetMvpMatrix();
 
             foreach (var triangle in scene.mesh.triangles)
             {
@@ -205,25 +249,87 @@ namespace SimpleRenderEngine
                 Vertex vertexB = scene.mesh.Vertices[triangle.BIndex];
                 Vertex vertexC = scene.mesh.Vertices[triangle.CIndex];
 
-                Vector4 pixelA = Project(vertexA.Position, matrixMVP);
-                Vector4 pixelB = Project(vertexB.Position, matrixMVP);
-                Vector4 pixelC = Project(vertexC.Position, matrixMVP);
+                //Vector4 pixelA = Project(vertexA.Position, matrixMVP);
+                //Vector4 pixelB = Project(vertexB.Position, matrixMVP);
+                //Vector4 pixelC = Project(vertexC.Position, matrixMVP);
 
                 //DrawPoint(Project(scene.light.LightPos, matrixMVP), Color.FromArgb(255, 0, 0));
 
+                List<Vertex> pIn = new List<Vertex>();
+ 
+                vertexA.ClipSpacePosition = this.ClipSpace(vertexA.Position, matrixMVP);
+                vertexB.ClipSpacePosition = this.ClipSpace(vertexB.Position, matrixMVP);
+                vertexC.ClipSpacePosition = this.ClipSpace(vertexC.Position, matrixMVP);
+               
+                pIn.Add(vertexA);
+                pIn.Add(vertexB);
+                pIn.Add(vertexC);
+                for (int i = 0; i < 6; i++)
+                {
+                    clip = new HodgmanClip(this);
+                    clip.HodgmanPolygonClip((HodgmanClip.Boundary)i, wMin, wMax, pIn.ToArray());
+                    pIn = clip.GetOutputList();
+                }
+
+                //Console.WriteLine("pIn !!" + pIn.Count);
+                //for (int i = 0; i < pIn.Count; i++)
+                //{
+                //    Console.WriteLine("pIn !!" + pIn[i].Position.X + "  " + pIn[i].Position.Y);
+                //}
+
+                List<VertexTriangle> vtList = this.MakeTriangle(pIn);
+
                 if (scene.renderState == Scene.RenderState.WireFrame)
                 {
-                    // 画线框
-                    DrawLine(vertexA, vertexB, pixelA, pixelB, scene);
-                    DrawLine(vertexB, vertexC, pixelB, pixelC, scene);
-                    DrawLine(vertexC, vertexA, pixelC, pixelA, scene);
+                    // 画线框, 需要vertex的normal,pos,color
+                    //DrawLine(vertexA, vertexB, this.ViewPort(vertexA.ClipSpacePosition), this.ViewPort(vertexB.ClipSpacePosition), scene);
+                    //DrawLine(vertexB, vertexC, this.ViewPort(vertexB.ClipSpacePosition), this.ViewPort(vertexC.ClipSpacePosition), scene);
+                    //DrawLine(vertexC, vertexA, this.ViewPort(vertexC.ClipSpacePosition), this.ViewPort(vertexA.ClipSpacePosition), scene);
+                    //DrawLine(vertexA, vertexB, pixelA, pixelB, scene);
+                    //DrawLine(vertexB, vertexC, pixelB, pixelC, scene);
+
+                    //Vertex start = pIn[pIn.Count - 1];
+                    //for (int i = 0; i < pIn.Count; i++)
+                    //{
+                    //    Vector4 viewPortA = this.ViewPort(start.ClipSpacePosition);
+                    //    Vector4 viewPortB = this.ViewPort(pIn[i].ClipSpacePosition);
+                    //    DrawLine(start, pIn[i], viewPortA, viewPortB, scene);
+                    //    start = pIn[i];
+                    //}
+                    for (int i = 0; i < vtList.Count; i++)
+                    {
+                        Vertex vertex1 = vtList[i].VertexA;
+                        Vertex vertex2 = vtList[i].VertexB;
+                        Vertex vertex3 = vtList[i].VertexC;
+                        Vector4 viewPort1 = this.ViewPort(vertex1.ClipSpacePosition);
+                        Vector4 viewPort2 = this.ViewPort(vertex2.ClipSpacePosition);
+                        Vector4 viewPort3 = this.ViewPort(vertex3.ClipSpacePosition);
+                        DrawLine(vertex1, vertex2, viewPort1, viewPort2, scene);
+                        DrawLine(vertex2, vertex3, viewPort2, viewPort3, scene);
+                        DrawLine(vertex3, vertex1, viewPort3, viewPort1, scene);
+                    }
                 }
                 else
-                { 
+                {
                     // 填充三角形
-                    DrawTriangle(vertexA, vertexB, vertexC, matrixMVP, scene);
-                } 
+                    //DrawTriangle(vertexA, vertexB, vertexC, matrixMVP, scene);                    
+                    for (int i = 0; i < vtList.Count; i++)
+                    {
+                        DrawTriangle(vtList[i].VertexA, vtList[i].VertexB, vtList[i].VertexC, matrixMVP, scene);                    
+                    }
+                }
             }
+        }
+
+        private List<VertexTriangle> MakeTriangle(List<Vertex> input)
+        {
+            List<VertexTriangle> temp = new List<VertexTriangle>();
+            for (int i = 0; i < input.Count - 2; i++)
+            {
+                VertexTriangle vt = new VertexTriangle(input[0], input[i + 1], input[i + 2]);
+                temp.Add(vt);
+            }
+            return temp;
         }
     }
 }

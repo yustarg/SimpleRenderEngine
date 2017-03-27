@@ -20,4 +20,18 @@ namespace SimpleRenderEngine
             this.CIndex = c;
         }
     }
+
+    public class VertexTriangle
+    {
+        public Vertex VertexA { get; set; }
+        public Vertex VertexB { get; set; }
+        public Vertex VertexC { get; set; }
+
+        public VertexTriangle(Vertex a, Vertex b, Vertex c)
+        {
+            this.VertexA = a;
+            this.VertexB = b;
+            this.VertexC = c;
+        }
+    }
 }

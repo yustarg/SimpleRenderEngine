@@ -14,10 +14,10 @@ namespace SimpleRenderEngine
         public Triangle[] triangles { get; set; }
         public Texture texture;
 
-        public Mesh(string name, string texPathing)
+        public Mesh(string name)
         {
             Name = name;
-            texture = new Texture(texPathing, 2048, 1206);
+            texture = new Texture(@"E:\SimpleRenderEngine\SimpleRenderEngine\SimpleRenderEngine\textures\background.jpg", 2048, 1206);
         }
 
         public void SetVertices(Vertex[] vertices)
@@ -28,7 +28,7 @@ namespace SimpleRenderEngine
 
         public void MakeTriangles()
         {
-            triangles = new Triangle[12] {
+            triangles = new Triangle[] {
                 // 正面
                 new Triangle(2, 5, 8),
                 new Triangle(2, 8, 11),
@@ -54,6 +54,7 @@ namespace SimpleRenderEngine
     public class Vertex
     {
         public Vector4 Position { get; set; }
+        public Vector4 ClipSpacePosition { get; set; }
         public Vector4 Normal { get; set; }
         public Vector4 UV { get; set; }
         public Color Color { get; set; }

@@ -44,6 +44,8 @@ namespace SimpleRenderEngine
                         if (screen2.Y > YMax) YMax = (int)screen2.Y;
                         if (screen1.Y < yMin) yMin = (int)screen1.Y;
                         if (screen2.Y < yMin) yMin = (int)screen2.Y;
+                        if (YMax > this.height) YMax = this.height;
+                        if (yMin < 0) yMin = 0;
 
                         int x1 = (int)screen1.X;
                         int y1 = (int)screen1.Y;
@@ -68,116 +70,116 @@ namespace SimpleRenderEngine
             AEL = new Edge();
             for (int i = yMin; i < YMax; i++)
             {
-                //if (ET[i].nextEdge != null)
+                if (YMax >= ET.Length) break;
+
+                // 将边表的边插入活动边表，并删除边表里的边
+                while (ET[i].nextEdge != null)
                 {
-                    // 将边表的边插入活动边表，并删除边表里的边
-                    while (ET[i].nextEdge != null)
-                    {
-                        InsertEdge(ref AEL, ET[i].nextEdge);
-                        ET[i].nextEdge = ET[i].nextEdge.nextEdge;
-                    }
+                    InsertEdge(ref AEL, ET[i].nextEdge);
+                    ET[i].nextEdge = ET[i].nextEdge.nextEdge;
+                }
                     
-                    if (AEL.nextEdge == null) continue;
+                if (AEL.nextEdge == null) continue;
 
-                    // 填充扫描线
-                    Edge a1 = (Edge)AEL.nextEdge.Clone();
-                    Edge a2 = (Edge)AEL.nextEdge.nextEdge.Clone();
+                // 填充扫描线
+                Edge a1 = (Edge)AEL.nextEdge.Clone();
+                Edge a2 = (Edge)AEL.nextEdge.nextEdge.Clone();
 
-                    // 插值
-                    Vector4 screenA1V1 = this.device.Project(a1.v1.Position, mvp);
-                    Vector4 screenA1V2 = this.device.Project(a1.v2.Position, mvp);
-                    Vector4 screenA2V1 = this.device.Project(a2.v1.Position, mvp);
-                    Vector4 screenA2V2 = this.device.Project(a2.v2.Position, mvp);
-                    float r1 = (float)(i - (int)screenA1V1.Y) / (float)(screenA1V2.Y - screenA1V1.Y);
-                    float r2 = (float)(i - (int)screenA2V1.Y) / (float)(screenA2V2.Y - screenA2V1.Y);
-                    Color c1 = MathUtil.ColorInterp(a1.v1.Color, a1.v2.Color, r1);
-                    Color c2 = MathUtil.ColorInterp(a2.v1.Color, a2.v2.Color, r2);
-                    float z1 = MathUtil.Interp(screenA1V1.Z, screenA1V2.Z, r1);
-                    float z2 = MathUtil.Interp(screenA2V1.Z, screenA2V2.Z, r2);
+                // 插值
+                Vector4 screenA1V1 = this.device.Project(a1.v1.Position, mvp);
+                Vector4 screenA1V2 = this.device.Project(a1.v2.Position, mvp);
+                Vector4 screenA2V1 = this.device.Project(a2.v1.Position, mvp);
+                Vector4 screenA2V2 = this.device.Project(a2.v2.Position, mvp);
+                float r1 = (float)(i - (int)screenA1V1.Y) / (float)(screenA1V2.Y - screenA1V1.Y);
+                float r2 = (float)(i - (int)screenA2V1.Y) / (float)(screenA2V2.Y - screenA2V1.Y);
+                Color c1 = MathUtil.ColorInterp(a1.v1.Color, a1.v2.Color, r1);
+                Color c2 = MathUtil.ColorInterp(a2.v1.Color, a2.v2.Color, r2);
+                float z1 = MathUtil.Interp(screenA1V1.Z, screenA1V2.Z, r1);
+                float z2 = MathUtil.Interp(screenA2V1.Z, screenA2V2.Z, r2);
 
-                    float nDotLA1V1 = scene.light.ComputeNDotL(a1.v1.Position, a1.v1.Normal);   // 这里暂时默认模型空间就是世界空间
-                    float nDotLA1V2 = scene.light.ComputeNDotL(a1.v2.Position, a1.v2.Normal);
-                    float nDotLA2V1 = scene.light.ComputeNDotL(a2.v1.Position, a2.v1.Normal);
-                    float nDotLA2V2 = scene.light.ComputeNDotL(a2.v2.Position, a2.v2.Normal);
-                    float nDotL1 = MathUtil.Interp(nDotLA1V1, nDotLA1V2, r1);
-                    float nDotL2 = MathUtil.Interp(nDotLA2V1, nDotLA2V2, r2);
+                float nDotLA1V1 = scene.light.ComputeNDotL(a1.v1.Position, a1.v1.Normal);   // 这里暂时默认模型空间就是世界空间
+                float nDotLA1V2 = scene.light.ComputeNDotL(a1.v2.Position, a1.v2.Normal);
+                float nDotLA2V1 = scene.light.ComputeNDotL(a2.v1.Position, a2.v1.Normal);
+                float nDotLA2V2 = scene.light.ComputeNDotL(a2.v2.Position, a2.v2.Normal);
+                float nDotL1 = MathUtil.Interp(nDotLA1V1, nDotLA1V2, r1);
+                float nDotL2 = MathUtil.Interp(nDotLA2V1, nDotLA2V2, r2);
 
-                    float u1 = 0;
-                    float v1 = 0;
-                    float u2 = 0;
-                    float v2 = 0;
-                    float w11 = mvp.Apply(a1.v1.Position).W;
-                    float w12 = mvp.Apply(a1.v2.Position).W;
-                    float w21 = mvp.Apply(a2.v1.Position).W;
-                    float w22 = mvp.Apply(a2.v2.Position).W;
-                    float w1 = 0;
-                    float w2 = 0;
-                    if (scene.renderState == Scene.RenderState.TextureMapping)
+                float u1 = 0;
+                float v1 = 0;
+                float u2 = 0;
+                float v2 = 0;
+                float w11 = mvp.Apply(a1.v1.Position).W;
+                float w12 = mvp.Apply(a1.v2.Position).W;
+                float w21 = mvp.Apply(a2.v1.Position).W;
+                float w22 = mvp.Apply(a2.v2.Position).W;
+                float w1 = 0;
+                float w2 = 0;
+                if (scene.renderState == Scene.RenderState.TextureMapping)
+                {
+                    u1 = MathUtil.Interp(a1.v1.UV.X / w11, a1.v2.UV.X / w12, r1);
+                    v1 = MathUtil.Interp(a1.v1.UV.Y / w11, a1.v2.UV.Y / w12, r1);
+                    u2 = MathUtil.Interp(a2.v1.UV.X / w21, a2.v2.UV.X / w22, r2);
+                    v2 = MathUtil.Interp(a2.v1.UV.Y / w21, a2.v2.UV.Y / w22, r2);
+                    w1 = MathUtil.Interp(1 / w11, 1 / w12, r1);
+                    w2 = MathUtil.Interp(1 / w21, 1 / w22, r2);
+                }
+
+                while (a1 != null && a2 != null)
+                {
+                    for (int x = (int)AEL.nextEdge.x; x < (int)AEL.nextEdge.nextEdge.x; x++)
                     {
-                        u1 = MathUtil.Interp(a1.v1.UV.X / w11, a1.v2.UV.X / w12, r1);
-                        v1 = MathUtil.Interp(a1.v1.UV.Y / w11, a1.v2.UV.Y / w12, r1);
-                        u2 = MathUtil.Interp(a2.v1.UV.X / w21, a2.v2.UV.X / w22, r2);
-                        v2 = MathUtil.Interp(a2.v1.UV.Y / w21, a2.v2.UV.Y / w22, r2);
-                        w1 = MathUtil.Interp(1 / w11, 1 / w12, r1);
-                        w2 = MathUtil.Interp(1 / w21, 1 / w22, r2);
+                        float r3 = (float)(x - (int)AEL.nextEdge.x) / (AEL.nextEdge.nextEdge.x - AEL.nextEdge.x);
+                        Color c3 = MathUtil.ColorInterp(c1, c2, r3);
+                        float z = MathUtil.Interp(z1, z2, r3);
+                        float nDotL = MathUtil.Interp(nDotL1, nDotL2, r3);
+                        Color final = Color.FromArgb(255, 255, 255);
+                        if (scene.renderState == Scene.RenderState.GouraudShading)
+                        {
+                            final = scene.light.IsEnable ? scene.light.GetFinalLightColor(nDotL) : c3;                            
+                        }
+                        else if (scene.renderState == Scene.RenderState.TextureMapping)
+                        {
+                            float w = MathUtil.Interp(w1, w2, r3);
+                            float u3 = MathUtil.Interp(u1, u2, r3) / w;
+                            float v3 = MathUtil.Interp(v1, v2, r3) / w;
+                            final = scene.mesh.texture.Map(u3, v3);
+                        }
+                        this.device.DrawPoint(new Vector4(x, i, z, 0), final);
                     }
-
-                    while (a1 != null && a2 != null)
+                    if (a2.nextEdge != null && a2.nextEdge.nextEdge != null)
                     {
-                        for (int x = (int)AEL.nextEdge.x; x < (int)AEL.nextEdge.nextEdge.x; x++)
-                        {
-                            float r3 = (float)(x - (int)AEL.nextEdge.x) / (AEL.nextEdge.nextEdge.x - AEL.nextEdge.x);
-                            Color c3 = MathUtil.ColorInterp(c1, c2, r3);
-                            float z = MathUtil.Interp(z1, z2, r3);
-                            float nDotL = MathUtil.Interp(nDotL1, nDotL2, r3);
-                            Color final = Color.FromArgb(255, 255, 255);
-                            if (scene.renderState == Scene.RenderState.GouraudShading)
-                            {
-                                final = scene.light.IsEnable ? scene.light.GetFinalLightColor(nDotL) : c3;                            
-                            }
-                            else if (scene.renderState == Scene.RenderState.TextureMapping)
-                            {
-                                float w = MathUtil.Interp(w1, w2, r3);
-                                float u3 = MathUtil.Interp(u1, u2, r3) / w;
-                                float v3 = MathUtil.Interp(v1, v2, r3) / w;
-                                final = scene.mesh.texture.Map(u3, v3);
-                            }
-                            this.device.DrawPoint(new Vector4(x, i, z, 0), final);
-                        }
-                        if (a2.nextEdge != null && a2.nextEdge.nextEdge != null)
-                        {
-                            a1 = (Edge)a2.nextEdge.Clone();
-                            a2 = (Edge)a1.nextEdge.Clone();
-                        }
-                        else
-                        {
-                            break;
-                        }
+                        a1 = (Edge)a2.nextEdge.Clone();
+                        a2 = (Edge)a1.nextEdge.Clone();
                     }
+                    else
+                    {
+                        break;
+                    }
+                }
                     
-                    // 删除y=yMax-1的边
-                    Edge p = AEL;
-                    while (p.nextEdge != null)
+                // 删除y=yMax-1的边
+                Edge p = AEL;
+                while (p.nextEdge != null)
+                {
+                    if (p.nextEdge.yMax - 1 == i)
                     {
-                        if (p.nextEdge.yMax - 1 == i)
-                        {
-                            Edge pDelete = p.nextEdge;
-                            p.nextEdge = pDelete.nextEdge;
-                            pDelete.nextEdge = null;
-                        }
-                        else
-                        {
-                            p = p.nextEdge;
-                        }
+                        Edge pDelete = p.nextEdge;
+                        p.nextEdge = pDelete.nextEdge;
+                        pDelete.nextEdge = null;
                     }
-
-                    p = AEL;
-                    while (p.nextEdge != null)
+                    else
                     {
-                        p.nextEdge.x += p.nextEdge.deltaX;
                         p = p.nextEdge;
                     }
-                }      
+                }
+
+                p = AEL;
+                while (p.nextEdge != null)
+                {
+                    p.nextEdge.x += p.nextEdge.deltaX;
+                    p = p.nextEdge;
+                }
+                      
             }
         }
 

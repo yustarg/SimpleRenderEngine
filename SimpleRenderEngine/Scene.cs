@@ -25,7 +25,7 @@ namespace SimpleRenderEngine
 
         private void InitMesh()
         {
-            this.mesh = new Mesh("Cube", @"E:\SimpleRenderEngine\SimpleRenderEngine\SimpleRenderEngine\textures\background.jpg");
+            this.mesh = new Mesh("Cube");
             //Vector4[] vertices = new Vector4[8] {
             //    new Vector4(-1, -1, -1, 1),
             //    new Vector4(1, -1, -1, 1),
