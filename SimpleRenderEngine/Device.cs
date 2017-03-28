@@ -11,11 +11,9 @@ namespace SimpleRenderEngine
     public class Device
     {
         private Bitmap bmp;
+        private BitmapData bmData;
         private int height;
         private int width;
-        private Rectangle rt;
-        private PixelFormat pixelFormat;
-        private BitmapData data;
         private ScanLine scanLine;
         private HodgmanClip clip;
         private Vector4 wMin;   // 裁剪空间(-1, -1, -1)
@@ -28,13 +26,10 @@ namespace SimpleRenderEngine
             this.bmp = bmp;
             this.height = bmp.Height;
             this.width = bmp.Width;
-            this.rt = new Rectangle(0, 0, this.width, this.height);
-            this.pixelFormat = bmp.PixelFormat;
             this.scanLine = new ScanLine(this);
             this.wMin = new Vector4(-1, -1, -1, 1);
             this.wMax = new Vector4(1, 1, 1, 1);
             this.depthBuffer = new float[bmp.Width * bmp.Height];
-            this.Clear();
         }
 
         public int GetHeight()
@@ -47,15 +42,13 @@ namespace SimpleRenderEngine
             return this.width;
         }
 
-        public void Clear()
+        public void Clear(BitmapData data)
         {
             // clear depth buffer
             for (int index = 0; index < depthBuffer.Length; index++)
             {
                 depthBuffer[index] = float.MaxValue;
             }
-
-            this.data = this.bmp.LockBits(rt, ImageLockMode.ReadWrite, this.pixelFormat); 
             unsafe
             {
                 byte* ptr = (byte*)(data.Scan0);
@@ -71,28 +64,22 @@ namespace SimpleRenderEngine
                     }
                     ptr += data.Stride - data.Width * 3;
                 }
-            }
-            this.bmp.UnlockBits(data);    
+            }  
         }
 
         public void PutPixel(int x, int y, float z, Color color)
         {
-            int index = (x + y * GetWidth());
-            
+            int index = (x + y * GetWidth());          
             if (depthBuffer[index] < z) return;
-
             depthBuffer[index] = z;
-
-            this.data = this.bmp.LockBits(rt, ImageLockMode.ReadWrite, this.pixelFormat);
             unsafe
             {
-                byte* ptr = (byte*)(data.Scan0);
-                byte* row = ptr + (y * data.Stride);
+                byte* ptr = (byte*)(this.bmData.Scan0);
+                byte* row = ptr + (y * this.bmData.Stride);
                 row[x * 3] = color.B;
                 row[x * 3 + 1] = color.G;
                 row[x * 3 + 2] = color.R;
             }
-            this.bmp.UnlockBits(data);
         }
 
         public Vector4 Project(Vector4 coord, Matrix4x4 mvp)
@@ -145,31 +132,26 @@ namespace SimpleRenderEngine
             }
         }
 
-        /*
-        // Bresenham 画线算法
-        public void DrawLine(Vector4 point0, Vector4 point1, Color color)
+        public Color Tex2D(float u, float v, Texture texture)
         {
-            int x0 = (int)point0.X;
-            int y0 = (int)point0.Y;
-            int x1 = (int)point1.X;
-            int y1 = (int)point1.Y;
+            int x = Math.Abs((int)((1 - u) * texture.GetWidth()) % width);
+            int y = Math.Abs((int)((1 - v) * texture.GetHeight()) % height);
 
-            int dx = Math.Abs(x1 - x0);
-            int dy = Math.Abs(y1 - y0);
-            int sx = (x0 < x1) ? 1 : -1;
-            int sy = (y0 < y1) ? 1 : -1;
-            int err = dx - dy;
-
-            while (true)
+            int r = 0;
+            int g = 0;
+            int b = 0;
+        
+            unsafe
             {
-                DrawPoint(new Vector4(x0, y0, 0, 0));
-                if ((x0 == x1) && (y0 == y1)) break;
-                int e2 = 2 * err;
-                if (e2 > -dy) { err -= dy; x0 += sx; }
-                if (e2 < dx) { err += dx; y0 += sy; }
+                byte* ptr = (byte*)(bmData.Scan0);
+                byte* row = ptr + (y * bmData.Stride);
+                b = row[x * 3];
+                g = row[x * 3 + 1];
+                r = row[x * 3 + 2];
             }
+
+            return Color.FromArgb(r, g, b);
         }
-        */
 
         // DDA 画线算法
         public void DrawLine(Vertex v1, Vertex v2, Vector4 point0, Vector4 point1, Scene scene)
@@ -238,9 +220,10 @@ namespace SimpleRenderEngine
             return model * view * projection;
         }
 
-        public void Render(Scene scene)
+        public void Render(Scene scene, BitmapData bmData)
         {
             this.scene = scene;
+            this.bmData = bmData;
             Matrix4x4 matrixMVP = this.GetMvpMatrix();
 
             foreach (var triangle in scene.mesh.triangles)

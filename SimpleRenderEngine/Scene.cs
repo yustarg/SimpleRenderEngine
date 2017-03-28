@@ -77,7 +77,7 @@ namespace SimpleRenderEngine
 
         private void InitCamera(int width, int height)
         {
-            this.camera = new Camera(MathUtil.PI * 0.5f, (float)width / (float)height, 1.0f, 500.0f);
+            this.camera = new Camera(MathUtil.PI * 0.3f, (float)width / (float)height, 1.0f, 500.0f);
             this.camera.Position = new Vector4(0, 5, 5, 1);
             this.camera.Target = new Vector4(0, 0, 0, 1);
             this.camera.Up = new Vector4(0, 1, 0, 1);

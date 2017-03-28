@@ -17,6 +17,8 @@ namespace SimpleRenderEngine
         private Graphics g;
         private Device device;
         private Scene scene;
+        private Rectangle rt;
+        private PixelFormat pixelFormat;
 
         public Form1()
         {
@@ -30,6 +32,8 @@ namespace SimpleRenderEngine
             bmp = new Bitmap(this.ClientSize.Width, this.ClientSize.Height, PixelFormat.Format24bppRgb);
             device = new Device(bmp);
             scene = new Scene(this.ClientSize.Width, this.ClientSize.Height);
+            this.rt = new Rectangle(0, 0, this.ClientSize.Width, this.ClientSize.Height);
+            this.pixelFormat = bmp.PixelFormat;
         }
 
         private void InitSettings()
@@ -41,9 +45,11 @@ namespace SimpleRenderEngine
 
         private void Form1_Paint(object sender, System.Windows.Forms.PaintEventArgs pe)
         {
-            this.device.Clear();
+            BitmapData data = this.bmp.LockBits(rt, ImageLockMode.ReadWrite, this.pixelFormat);
+            this.device.Clear(data);
             g = pe.Graphics;
-            device.Render(scene);
+            device.Render(scene, data);
+            this.bmp.UnlockBits(data);
             g.DrawImage(this.bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
         }
 
@@ -55,7 +61,7 @@ namespace SimpleRenderEngine
         }
 
         private const float MoveSpeed = 0.5f;
-        private const float RotateSpeed = 2f * (float)Math.PI / 180f;
+        private const float RotateSpeed = 5f * (float)Math.PI / 180f;
         private int mouseX = 0;
         private int mouseY = 0;
         private void Form1_OnMouseMove(object sender, MouseEventArgs e)
@@ -78,7 +84,6 @@ namespace SimpleRenderEngine
                     this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
                 }
                 mouseX = e.X;
-                this.device.Clear();
                 this.Invalidate();
             }
         }
@@ -101,7 +106,6 @@ namespace SimpleRenderEngine
             {
                 this.scene.UpdateCameraPos(new Vector4(oriX - x, oriY - y, oriZ - z, 1));
             }
-            this.device.Clear();
             this.Invalidate();
         }
 
@@ -130,7 +134,6 @@ namespace SimpleRenderEngine
                 float newZ = (float)(oriX * Math.Sin(-RotateSpeed) + oriZ * Math.Cos(-RotateSpeed));
                 this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
             }
-            this.device.Clear();
             this.Invalidate();
             return true;
         }
@@ -140,7 +143,6 @@ namespace SimpleRenderEngine
         {
             if (this.radioButton1.Checked)
             {
-                this.device.Clear();
                 this.scene.renderState = Scene.RenderState.WireFrame;
                 this.Invalidate();
             }
@@ -151,7 +153,6 @@ namespace SimpleRenderEngine
         {
             if (this.radioButton2.Checked)
             {
-                this.device.Clear(); 
                 this.scene.renderState = Scene.RenderState.GouraudShading;
                 this.Invalidate();
             }
@@ -162,7 +163,6 @@ namespace SimpleRenderEngine
         {
             if (this.radioButton3.Checked)
             {
-                this.device.Clear();
                 this.scene.renderState = Scene.RenderState.TextureMapping;
                 this.Invalidate();
             }
@@ -174,7 +174,6 @@ namespace SimpleRenderEngine
             this.hScrollBar1.Visible = checkBox1.Checked;
             this.hScrollBar1.Value = (int)(0.2f * this.hScrollBar1.Maximum);
             this.scene.light.IsEnable = checkBox1.Checked;
-            this.device.Clear();
             this.Invalidate();
         }
 
@@ -182,7 +181,6 @@ namespace SimpleRenderEngine
         {
             float ratio = (float)this.hScrollBar1.Value / (float)this.hScrollBar1.Maximum;
             this.scene.light.Kd = ratio;
-            this.device.Clear();
             this.Invalidate();
         }
     }

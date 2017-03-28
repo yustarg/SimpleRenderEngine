@@ -214,10 +214,8 @@ namespace SimpleRenderEngine
             }
 
             newEdge.nextEdge = current;
-            if (previous == null)
-                root = newEdge;
-            else
-                previous.nextEdge = newEdge;
+            if (previous == null) root = newEdge;
+            else previous.nextEdge = newEdge;  
         }
 
     }
