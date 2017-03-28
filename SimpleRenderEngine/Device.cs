@@ -67,7 +67,7 @@ namespace SimpleRenderEngine
             }  
         }
 
-        public void PutPixel(int x, int y, float z, Color color)
+        public void PutPixel(int x, int y, float z, Color4 color)
         {
             int index = (x + y * GetWidth());          
             if (depthBuffer[index] < z) return;
@@ -76,9 +76,9 @@ namespace SimpleRenderEngine
             {
                 byte* ptr = (byte*)(this.bmData.Scan0);
                 byte* row = ptr + (y * this.bmData.Stride);
-                row[x * 3] = color.B;
-                row[x * 3 + 1] = color.G;
-                row[x * 3 + 2] = color.R;
+                row[x * 3] = color.Z;
+                row[x * 3 + 1] = color.Y;
+                row[x * 3 + 2] = color.X;
             }
         }
 
@@ -122,7 +122,7 @@ namespace SimpleRenderEngine
             return val;
         }
 
-        public void DrawPoint(Vector4 point, Color c)
+        public void DrawPoint(Vector4 point, Color4 c)
         {
             if (point.X >= 0 && point.Y >= 0 && point.X <= GetWidth() && point.Y <= GetHeight())
             {
@@ -132,7 +132,7 @@ namespace SimpleRenderEngine
             }
         }
 
-        public Color Tex2D(float u, float v, Texture texture)
+        public Color4 Tex2D(float u, float v, Texture texture)
         {
             int x = Math.Abs((int)((1 - u) * texture.GetWidth()) % texture.GetWidth());
             int y = Math.Abs((int)((1 - v) * texture.GetHeight()) % texture.GetHeight());
@@ -150,7 +150,7 @@ namespace SimpleRenderEngine
                 r = row[x * 3 + 2];
             }
 
-            return Color.FromArgb(r, g, b);
+            return new Color4((byte)r, (byte)g, (byte)b);
         }
 
         // DDA 画线算法
@@ -177,19 +177,19 @@ namespace SimpleRenderEngine
             for (int i = 1; i <= steps; i++)
             {
                 float ratio = (float)i / (float)steps;
-                Color vertexColor = Color.FromArgb(0, 0, 0);
-                Color lightColor = Color.FromArgb(0, 0, 0);
+                Color4 vertexColor = new Color4(0, 0, 0);
+                Color4 lightColor = new Color4(0, 0, 0);
                 if (scene.light.IsEnable)
                 {
-                    Color c1 = scene.light.GetFinalLightColor(nDotL1);
-                    Color c2 = scene.light.GetFinalLightColor(nDotL2);
+                    Color4 c1 = scene.light.GetFinalLightColor(nDotL1);
+                    Color4 c2 = scene.light.GetFinalLightColor(nDotL2);
                     lightColor = MathUtil.ColorInterp(c1, c2, ratio);
                 }else
                 {
                     vertexColor = MathUtil.ColorInterp(v1.Color, v2.Color, ratio);
                 }
                 float z = MathUtil.Interp(z1, z2, ratio);
-                DrawPoint(new Vector4((int)x, (int)y, z, 0), MathUtil.AddColor(vertexColor, lightColor));
+                DrawPoint(new Vector4((int)x, (int)y, z, 0), vertexColor + lightColor);
                 x += xInc;
                 y += yInc;
             }

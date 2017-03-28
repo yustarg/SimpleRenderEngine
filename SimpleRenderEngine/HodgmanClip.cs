@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SimpleRenderEngine
 {
@@ -37,7 +34,7 @@ namespace SimpleRenderEngine
             if (p1.Z != p2.Z) { m5 = (wMin.Z - p1.Z) / (p2.Z - p1.Z); m6 = (wMax.Z - p1.Z) / (p2.Z - p1.Z); }
             Vector4 clipPos = new Vector4();
             Vector4 pos = new Vector4();
-            Color col = Color.FromArgb(255, 255, 255);
+            Color4 col = new Color4(255, 255, 255);
             Vector4 normal = new Vector4();
             Vector4 uv = new Vector4();
             switch (b)

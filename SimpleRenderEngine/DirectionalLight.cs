@@ -1,20 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Drawing;
 
 namespace SimpleRenderEngine
 {
     public class DirectionalLight
     {
-        public static Color AmbientColor = Color.FromArgb(0, 50, 0);
-        private const float MAXKD = 0.2f;
+        public static Color4 AmbientColor = new Color4(0, 20, 0);
+        private const float MAXKD = 1f;
 
         public bool IsEnable { get; set; }
         public Vector4 LightPos { get; set; }
-        public Color LightColor { get; set; }
+        public Color4 LightColor { get; set; }
         private float kd;
         public float Kd 
         {
@@ -28,7 +23,7 @@ namespace SimpleRenderEngine
             }
         }
 
-        public DirectionalLight(Vector4 pos, Color color)
+        public DirectionalLight(Vector4 pos, Color4 color)
         {
             this.kd = MAXKD * 0.2f;
             this.LightPos = pos;
@@ -45,15 +40,15 @@ namespace SimpleRenderEngine
             return Math.Max(0, Vector4.Dot(normal, lightDirection));
         }
 
-        public Color GetDiffuseColor(float nDotL)
+        public Color4 GetDiffuseColor(float nDotL)
         {
             return MathUtil.MulColor(MathUtil.MulColor(LightColor, nDotL), Kd);
         }
 
-        public Color GetFinalLightColor(float nDotL)
+        public Color4 GetFinalLightColor(float nDotL)
         {
-            Color diffuse = MathUtil.MulColor(MathUtil.MulColor(LightColor, nDotL), Kd);
-            Color final = MathUtil.AddColor(diffuse, DirectionalLight.AmbientColor);
+            Color4 diffuse = MathUtil.MulColor(MathUtil.MulColor(LightColor, nDotL), Kd);
+            Color4 final = diffuse + DirectionalLight.AmbientColor;
             return final;
         }
     }

@@ -94,8 +94,8 @@ namespace SimpleRenderEngine
                 Vector4 screenA2V2 = this.device.ViewPort(a2.v2.ClipSpacePosition);//this.device.Project(a2.v2.Position, mvp);
                 float r1 = (float)(i - (int)screenA1V1.Y) / (float)(screenA1V2.Y - screenA1V1.Y);
                 float r2 = (float)(i - (int)screenA2V1.Y) / (float)(screenA2V2.Y - screenA2V1.Y);
-                Color c1 = MathUtil.ColorInterp(a1.v1.Color, a1.v2.Color, r1);
-                Color c2 = MathUtil.ColorInterp(a2.v1.Color, a2.v2.Color, r2);
+                Color4 c1 = MathUtil.ColorInterp(a1.v1.Color, a1.v2.Color, r1);
+                Color4 c2 = MathUtil.ColorInterp(a2.v1.Color, a2.v2.Color, r2);
                 float z1 = MathUtil.Interp(screenA1V1.Z, screenA1V2.Z, r1);
                 float z2 = MathUtil.Interp(screenA2V1.Z, screenA2V2.Z, r2);
 
@@ -135,10 +135,10 @@ namespace SimpleRenderEngine
                     for (int x = (int)AEL.nextEdge.x; x < (int)AEL.nextEdge.nextEdge.x; x++)
                     {
                         float r3 = MathUtil.Clamp01((float)(x - a1.x) / (a2.x - a1.x));
-                        Color c3 = MathUtil.ColorInterp(c1, c2, r3);
+                        Color4 c3 = MathUtil.ColorInterp(c1, c2, r3);
                         float z = MathUtil.Interp(z1, z2, r3);
                         float nDotL = MathUtil.Interp(nDotL1, nDotL2, r3);
-                        Color final = Color.FromArgb(255, 255, 255);
+                        Color4 final = new Color4(255, 255, 255);
                         if (scene.renderState == Scene.RenderState.GouraudShading)
                         {
                             final = scene.light.IsEnable ? scene.light.GetFinalLightColor(nDotL) : c3;                            
@@ -150,8 +150,8 @@ namespace SimpleRenderEngine
                             float v3 = MathUtil.Interp(v1, v2, r3) / w;
                             if (scene.light.IsEnable)
                             {
-                                final = MathUtil.MulColor(scene.light.GetDiffuseColor(nDotL), this.device.Tex2D(u3, v3, scene.mesh.texture));
-                                final = MathUtil.AddColor(final, DirectionalLight.AmbientColor);
+                                final = this.device.Tex2D(u3, v3, scene.mesh.texture) * scene.light.GetDiffuseColor(nDotL);
+                                final += DirectionalLight.AmbientColor;
                             }
                             else
                             {

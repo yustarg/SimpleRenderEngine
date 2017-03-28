@@ -17,7 +17,7 @@ namespace SimpleRenderEngine
         public Mesh(string name)
         {
             Name = name;
-            texture = new Texture(@"E:\SimpleRenderEngine\SimpleRenderEngine\SimpleRenderEngine\textures\background.jpg", 706, 530); //2048, 1206);//706, 530);
+            texture = new Texture(@"..\..\textures\background.jpg", 706, 530); //2048, 1206);//706, 530);
         }
 
         public void SetVertices(Vertex[] vertices)
@@ -57,11 +57,11 @@ namespace SimpleRenderEngine
         public Vector4 ClipSpacePosition { get; set; }
         public Vector4 Normal { get; set; }
         public Vector4 UV { get; set; }
-        public Color Color { get; set; }
+        public Color4 Color { get; set; }
 
         public Vertex() { }
         
-        public Vertex(Vector4 pos, Vector4 normal, Vector4 uv, Color col)
+        public Vertex(Vector4 pos, Vector4 normal, Vector4 uv, Color4 col)
         {
             this.Position = pos;
             this.Normal = normal;
