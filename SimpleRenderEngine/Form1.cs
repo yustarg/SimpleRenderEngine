@@ -164,7 +164,8 @@ namespace SimpleRenderEngine
             if (this.radioButton3.Checked)
             {
                 this.scene.renderState = Scene.RenderState.TextureMapping;
-                this.Invalidate();
+                //BitmapData bmData = 
+                //this.Invalidate();
             }
         }
 

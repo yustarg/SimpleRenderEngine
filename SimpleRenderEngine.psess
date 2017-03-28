@@ -67,11 +67,6 @@
       <ProjName>SimpleRenderEngine</ProjName>
     </ProjBinary>
   </Binaries>
-  <Reports>
-    <Report>
-      <Path>SimpleRenderEngine170328.vsp</Path>
-    </Report>
-  </Reports>
   <Launches>
     <ProjBinary>
       <Path>:PB:{C7514826-8F48-4AA4-BAC4-B28E04677802}|SimpleRenderEngine\SimpleRenderEngine.csproj</Path>

@@ -1,0 +1,8 @@
+*.exe
+*.sln
+*.suo
+*.press
+*.vsp
+obj
+bin
+Debug
