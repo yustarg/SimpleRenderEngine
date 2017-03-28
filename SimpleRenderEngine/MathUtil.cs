@@ -82,5 +82,13 @@ namespace SimpleRenderEngine
             int b = Math.Min((int)(c1.B * t), 255);
             return Color.FromArgb(r, g, b);
         }
+
+        public static Color MulColor(Color c1, Color c2)
+        {
+            int r = Math.Min((int)(c1.R * c2.R), 255);
+            int g = Math.Min((int)(c1.G * c2.G), 255);
+            int b = Math.Min((int)(c1.B * c2.B), 255);
+            return Color.FromArgb(r, g, b);
+        }
     }
 }

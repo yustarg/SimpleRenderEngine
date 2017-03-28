@@ -220,7 +220,7 @@ namespace SimpleRenderEngine
             vertices[1] = p2;
             vertices[2] = p3;
 
-            this.scanLine.ProcessScanLine(vertices, mvp, scene);
+            this.scanLine.ProcessScanLine(vertices, scene);
         }
 
         public Matrix4x4 GetMvpMatrix()
@@ -268,12 +268,11 @@ namespace SimpleRenderEngine
                     clip = new HodgmanClip(this);
                     clip.HodgmanPolygonClip((HodgmanClip.Boundary)i, wMin, wMax, pIn.ToArray());
                     pIn = clip.GetOutputList();
-                } 
+                }
+                List<VertexTriangle> vtList = this.MakeTriangle(pIn);
 
                 if (scene.renderState == Scene.RenderState.WireFrame)
-                {              
-                    List<VertexTriangle> vtList = this.MakeTriangle(pIn);
-                    
+                {       
                     // 画线框, 需要vertex的normal,pos,color
                     //DrawLine(vertexA, vertexB, this.ViewPort(vertexA.ClipSpacePosition), this.ViewPort(vertexB.ClipSpacePosition), scene);
                     //DrawLine(vertexB, vertexC, this.ViewPort(vertexB.ClipSpacePosition), this.ViewPort(vertexC.ClipSpacePosition), scene);
@@ -303,18 +302,13 @@ namespace SimpleRenderEngine
                     }
                 }
                 else
-                {
-                    List<VertexTriangle> vtList = this.MakeTriangle(pIn);
-                    
+                {        
                     // 填充三角形
                     //DrawTriangle(vertexA, vertexB, vertexC, matrixMVP, scene);                    
                     for (int i = 0; i < vtList.Count; i++)
                     {
                         DrawTriangle(vtList[i].VertexA, vtList[i].VertexB, vtList[i].VertexC, matrixMVP, scene);
                     }
-                    //DrawTriangle(vtList[0].VertexA, vtList[0].VertexB, vtList[0].VertexC, matrixMVP, scene);
-                    //DrawTriangle(vtList[1].VertexA, vtList[1].VertexB, vtList[1].VertexC, matrixMVP, scene);
-
                 }
             }
         }

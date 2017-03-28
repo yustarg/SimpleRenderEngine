@@ -10,7 +10,7 @@ namespace SimpleRenderEngine
     public class DirectionalLight
     {
         public static Color AmbientColor = Color.FromArgb(0, 50, 0);
-        private const int MAXKD = 5;
+        private const float MAXKD = 0.2f;
 
         public bool IsEnable { get; set; }
         public Vector4 LightPos { get; set; }
@@ -30,7 +30,7 @@ namespace SimpleRenderEngine
 
         public DirectionalLight(Vector4 pos, Color color)
         {
-            this.kd = 1;
+            this.kd = MAXKD * 0.2f;
             this.LightPos = pos;
             this.LightColor = color;
         }
@@ -43,6 +43,11 @@ namespace SimpleRenderEngine
             lightDirection.Normalize();
 
             return Math.Max(0, Vector4.Dot(normal, lightDirection));
+        }
+
+        public Color GetDiffuseColor(float nDotL)
+        {
+            return MathUtil.MulColor(MathUtil.MulColor(LightColor, nDotL), Kd);
         }
 
         public Color GetFinalLightColor(float nDotL)

@@ -85,7 +85,7 @@ namespace SimpleRenderEngine
                     clipPos.W = p1.W + (p2.W - p1.W) * m5;
                     pos = MathUtil.Vector4Interp(v1.Position, v2.Position, m5);
                     col = MathUtil.ColorInterp(v1.Color, v2.Color, m5);
-                    normal = MathUtil.Vector4Interp(v1.Normal, v2.Normal, m5);            
+                    normal = MathUtil.Vector4Interp(v1.Normal, v2.Normal, m5);  
                     break;
                 case Boundary.Front:
                     clipPos.Z = wMax.Z;
@@ -102,12 +102,12 @@ namespace SimpleRenderEngine
             Vector4 s2 = this.device.ViewPort(p2);
             Vector4 s3 = this.device.ViewPort(clipPos);
             float r = 0;
-            if(s2.X - s1.X != 0) r = (float)(s3.X - s1.X) / (float)(s2.X - s1.X);
-            else r = (float)(s3.Y - s1.Y) / (float)(s2.Y - s1.Y);
-            float w = MathUtil.Interp(p1.W, p2.W, r);
+            if (s2.Y - s1.Y != 0) r = (float)(s3.Y - s1.Y) / (float)(s2.Y - s1.Y);
+            else r = (float)(s3.X - s1.X) / (float)(s2.X - s1.X);
+            float w = MathUtil.Interp(1f / p1.W, 1f / p2.W, r);
             float u = MathUtil.Interp(v1.UV.X / p1.W, v2.UV.X / p2.W, r);
             float v = MathUtil.Interp(v1.UV.Y / p1.W, v2.UV.Y / p2.W, r);
-            uv = new Vector4(u * w, v * w, 0, 0);
+            uv = new Vector4(u / w, v / w, 0, 0);
 
             iPt.Position = pos;
             iPt.ClipSpacePosition = clipPos;

@@ -26,7 +26,7 @@ namespace SimpleRenderEngine
         }
 
         // 需要屏幕坐标
-        public void ProcessScanLine(Vertex[] vertices, Matrix4x4 mvp, Scene scene)
+        public void ProcessScanLine(Vertex[] vertices, Scene scene)
         {
             int yMin = this.height;
             int yMax = 0;
@@ -148,7 +148,15 @@ namespace SimpleRenderEngine
                             float w = MathUtil.Interp(w1, w2, r3);
                             float u3 = MathUtil.Interp(u1, u2, r3) / w;
                             float v3 = MathUtil.Interp(v1, v2, r3) / w;
-                            final = scene.mesh.texture.Map(u3, v3);
+                            if (scene.light.IsEnable)
+                            {
+                                final = MathUtil.MulColor(scene.light.GetDiffuseColor(nDotL), scene.mesh.texture.Map(u3, v3));
+                                final = MathUtil.AddColor(final, DirectionalLight.AmbientColor);
+                            }
+                            else
+                            {
+                                final = scene.mesh.texture.Map(u3, v3);
+                            }
                         }
                         this.device.DrawPoint(new Vector4(x, i, z, 0), final);
                     }
