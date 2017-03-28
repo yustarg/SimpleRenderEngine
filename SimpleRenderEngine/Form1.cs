@@ -63,7 +63,6 @@ namespace SimpleRenderEngine
         private const float MoveSpeed = 0.5f;
         private const float RotateSpeed = 5f * (float)Math.PI / 180f;
         private int mouseX = 0;
-        private int mouseY = 0;
         private void Form1_OnMouseMove(object sender, MouseEventArgs e)
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
@@ -73,14 +72,14 @@ namespace SimpleRenderEngine
                 float oriY = this.scene.camera.Position.Y;
                 if (e.X - mouseX > 0)
                 {
-                    float newX = (float)(oriX * Math.Cos(RotateSpeed) - oriZ * Math.Sin(RotateSpeed));
-                    float newZ = (float)(oriX * Math.Sin(RotateSpeed) + oriZ * Math.Cos(RotateSpeed));
+                    float newX = (float)(oriX * Math.Cos(-RotateSpeed) - oriZ * Math.Sin(-RotateSpeed));
+                    float newZ = (float)(oriX * Math.Sin(-RotateSpeed) + oriZ * Math.Cos(-RotateSpeed));
                     this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
                 }
                 else
                 {
-                    float newX = (float)(oriX * Math.Cos(-RotateSpeed) - oriZ * Math.Sin(-RotateSpeed));
-                    float newZ = (float)(oriX * Math.Sin(-RotateSpeed) + oriZ * Math.Cos(-RotateSpeed));
+                    float newX = (float)(oriX * Math.Cos(RotateSpeed) - oriZ * Math.Sin(RotateSpeed));
+                    float newZ = (float)(oriX * Math.Sin(RotateSpeed) + oriZ * Math.Cos(RotateSpeed));
                     this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
                 }
                 mouseX = e.X;
@@ -124,14 +123,14 @@ namespace SimpleRenderEngine
             }
             else if (keyData == Keys.A)
             {
-                float newX = (float)(oriX * Math.Cos(RotateSpeed) - oriZ * Math.Sin(RotateSpeed));
-                float newZ = (float)(oriX * Math.Sin(RotateSpeed) + oriZ * Math.Cos(RotateSpeed));
+                float newX = (float)(oriX * Math.Cos(-RotateSpeed) - oriZ * Math.Sin(-RotateSpeed));
+                float newZ = (float)(oriX * Math.Sin(-RotateSpeed) + oriZ * Math.Cos(-RotateSpeed));
                 this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
             }
             else if (keyData == Keys.D)
             {
-                float newX = (float)(oriX * Math.Cos(-RotateSpeed) - oriZ * Math.Sin(-RotateSpeed));
-                float newZ = (float)(oriX * Math.Sin(-RotateSpeed) + oriZ * Math.Cos(-RotateSpeed));
+                float newX = (float)(oriX * Math.Cos(RotateSpeed) - oriZ * Math.Sin(RotateSpeed));
+                float newZ = (float)(oriX * Math.Sin(RotateSpeed) + oriZ * Math.Cos(RotateSpeed));
                 this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
             }
             this.Invalidate();
@@ -164,8 +163,9 @@ namespace SimpleRenderEngine
             if (this.radioButton3.Checked)
             {
                 this.scene.renderState = Scene.RenderState.TextureMapping;
-                //BitmapData bmData = 
-                //this.Invalidate();
+                BitmapData bmData = this.scene.mesh.texture.LockBits();
+                this.Invalidate();
+                this.scene.mesh.texture.UnlockBits(bmData);
             }
         }
 

@@ -150,12 +150,12 @@ namespace SimpleRenderEngine
                             float v3 = MathUtil.Interp(v1, v2, r3) / w;
                             if (scene.light.IsEnable)
                             {
-                                final = MathUtil.MulColor(scene.light.GetDiffuseColor(nDotL), scene.mesh.texture.Map(u3, v3));
+                                final = MathUtil.MulColor(scene.light.GetDiffuseColor(nDotL), this.device.Tex2D(u3, v3, scene.mesh.texture));
                                 final = MathUtil.AddColor(final, DirectionalLight.AmbientColor);
                             }
                             else
                             {
-                                final = scene.mesh.texture.Map(u3, v3);
+                                final = this.device.Tex2D(u3, v3, scene.mesh.texture);
                             }
                         }
                         this.device.DrawPoint(new Vector4(x, i, z, 0), final);

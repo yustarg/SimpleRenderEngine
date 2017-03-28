@@ -134,8 +134,8 @@ namespace SimpleRenderEngine
 
         public Color Tex2D(float u, float v, Texture texture)
         {
-            int x = Math.Abs((int)((1 - u) * texture.GetWidth()) % width);
-            int y = Math.Abs((int)((1 - v) * texture.GetHeight()) % height);
+            int x = Math.Abs((int)((1 - u) * texture.GetWidth()) % texture.GetWidth());
+            int y = Math.Abs((int)((1 - v) * texture.GetHeight()) % texture.GetHeight());
 
             int r = 0;
             int g = 0;
@@ -143,8 +143,8 @@ namespace SimpleRenderEngine
         
             unsafe
             {
-                byte* ptr = (byte*)(bmData.Scan0);
-                byte* row = ptr + (y * bmData.Stride);
+                byte* ptr = (byte*)(texture.GetBmData().Scan0);
+                byte* row = ptr + (y * texture.GetBmData().Stride);
                 b = row[x * 3];
                 g = row[x * 3 + 1];
                 r = row[x * 3 + 2];
