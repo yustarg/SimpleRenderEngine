@@ -35,7 +35,7 @@ namespace SimpleRenderEngine
                 // 右面
                 new Triangle(4, 16, 7),
                 new Triangle(16, 19, 7),
-                // 左面
+                //左面
                 new Triangle(13, 1, 10),
                 new Triangle(13, 10, 22),
                 // 背面

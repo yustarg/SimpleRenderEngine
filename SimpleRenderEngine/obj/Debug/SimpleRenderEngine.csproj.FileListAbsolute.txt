@@ -7,3 +7,12 @@ E:\SimpleRenderEngine\SimpleRenderEngine\SimpleRenderEngine\obj\Debug\SimpleRend
 E:\SimpleRenderEngine\SimpleRenderEngine\SimpleRenderEngine\obj\Debug\SimpleRenderEngine.csproj.GenerateResource.Cache
 E:\SimpleRenderEngine\SimpleRenderEngine\SimpleRenderEngine\obj\Debug\SimpleRenderEngine.exe
 E:\SimpleRenderEngine\SimpleRenderEngine\SimpleRenderEngine\obj\Debug\SimpleRenderEngine.pdb
+E:\Git\SimpleRenderEngine\SimpleRenderEngine\bin\Debug\SimpleRenderEngine.exe.config
+E:\Git\SimpleRenderEngine\SimpleRenderEngine\obj\Debug\SimpleRenderEngine.exe
+E:\Git\SimpleRenderEngine\SimpleRenderEngine\obj\Debug\SimpleRenderEngine.pdb
+E:\Git\SimpleRenderEngine\SimpleRenderEngine\bin\Debug\SimpleRenderEngine.exe
+E:\Git\SimpleRenderEngine\SimpleRenderEngine\bin\Debug\SimpleRenderEngine.pdb
+E:\Git\SimpleRenderEngine\SimpleRenderEngine\obj\Debug\SimpleRenderEngine.csprojResolveAssemblyReference.cache
+E:\Git\SimpleRenderEngine\SimpleRenderEngine\obj\Debug\SimpleRenderEngine.Form1.resources
+E:\Git\SimpleRenderEngine\SimpleRenderEngine\obj\Debug\SimpleRenderEngine.Properties.Resources.resources
+E:\Git\SimpleRenderEngine\SimpleRenderEngine\obj\Debug\SimpleRenderEngine.csproj.GenerateResource.Cache

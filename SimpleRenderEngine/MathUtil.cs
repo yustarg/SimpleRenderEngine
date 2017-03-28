@@ -37,6 +37,16 @@ namespace SimpleRenderEngine
             return val;
         }
 
+        public static Vector4 Vector4Mul(Vector4 x1, float t)
+        {
+            Vector4 val = new Vector4();
+            val.X = x1.X * t;
+            val.Y = x1.Y * t;
+            val.Z = x1.Z * t;
+            val.W = 1.0f;
+            return val;
+        }
+
         public static Vector4 Vector4Divide(Vector4 x1, float t)
         {
             Vector4 val = new Vector4();

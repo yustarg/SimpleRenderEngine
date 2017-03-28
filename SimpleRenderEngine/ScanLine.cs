@@ -13,8 +13,6 @@ namespace SimpleRenderEngine
         private Edge[] ET;
         private Edge AEL;
         private int height;
-        private int minY;
-        private int maxY;
 
         public ScanLine(Device device)
         {
@@ -30,21 +28,25 @@ namespace SimpleRenderEngine
         // 需要屏幕坐标
         public void ProcessScanLine(Vertex[] vertices, Matrix4x4 mvp, Scene scene)
         {
-            int yMin = this.height; 
-            int YMax = 0;
+            int yMin = this.height;
+            int yMax = 0;
+
             for (int i = 0; i < vertices.Length; i++)
             {
                 for (int j = i + 1; j < vertices.Length; j++)
                 {
-                    Vector4 screen1 = this.device.Project(vertices[i].Position, mvp);
-                    Vector4 screen2 = this.device.Project(vertices[j].Position, mvp);
-                    if (screen1.Y != screen2.Y)
+                    //Vector4 screen1 = this.device.Project(vertices[i].Position, mvp);
+                    //Vector4 screen2 = this.device.Project(vertices[j].Position, mvp);
+                    Vector4 screen1 = this.device.ViewPort(vertices[i].ClipSpacePosition);
+                    Vector4 screen2 = this.device.ViewPort(vertices[j].ClipSpacePosition);
+
+                    if ((int)screen1.Y != (int)screen2.Y)
                     {
-                        if (screen1.Y > YMax) YMax = (int)screen1.Y;
-                        if (screen2.Y > YMax) YMax = (int)screen2.Y;
+                        if (screen1.Y > yMax) yMax = (int)screen1.Y;
+                        if (screen2.Y > yMax) yMax = (int)screen2.Y;
                         if (screen1.Y < yMin) yMin = (int)screen1.Y;
                         if (screen2.Y < yMin) yMin = (int)screen2.Y;
-                        if (YMax > this.height) YMax = this.height;
+                        if (yMax > this.height) yMax = this.height;
                         if (yMin < 0) yMin = 0;
 
                         int x1 = (int)screen1.X;
@@ -52,7 +54,9 @@ namespace SimpleRenderEngine
                         int x2 = (int)screen2.X;
                         int y2 = (int)screen2.Y;
                         int ymin = y1 > y2 ? y2 : y1;
+                        if (ymin < 0) ymin = 0;
                         int ymax = y1 > y2 ? y1 : y2;
+                        if (ymax > this.height) ymax = this.height;
                         float x = y1 > y2 ? x2 : x1;
                         float dx = (x1 - x2) * 1.0f / (y1 - y2);
                         Edge e = new Edge();
@@ -68,14 +72,12 @@ namespace SimpleRenderEngine
 
             // 置空活动边表
             AEL = new Edge();
-            for (int i = yMin; i < YMax; i++)
+            for (int i = yMin; i < yMax; i++)
             {
-                if (YMax >= ET.Length) break;
-
                 // 将边表的边插入活动边表，并删除边表里的边
                 while (ET[i].nextEdge != null)
                 {
-                    InsertEdge(ref AEL, ET[i].nextEdge);
+                    InsertEdge(ref AEL.nextEdge, ET[i].nextEdge);
                     ET[i].nextEdge = ET[i].nextEdge.nextEdge;
                 }
                     
@@ -86,10 +88,10 @@ namespace SimpleRenderEngine
                 Edge a2 = (Edge)AEL.nextEdge.nextEdge.Clone();
 
                 // 插值
-                Vector4 screenA1V1 = this.device.Project(a1.v1.Position, mvp);
-                Vector4 screenA1V2 = this.device.Project(a1.v2.Position, mvp);
-                Vector4 screenA2V1 = this.device.Project(a2.v1.Position, mvp);
-                Vector4 screenA2V2 = this.device.Project(a2.v2.Position, mvp);
+                Vector4 screenA1V1 = this.device.ViewPort(a1.v1.ClipSpacePosition); //this.device.Project(a1.v1.Position, mvp);
+                Vector4 screenA1V2 = this.device.ViewPort(a1.v2.ClipSpacePosition);//this.device.Project(a1.v2.Position, mvp);
+                Vector4 screenA2V1 = this.device.ViewPort(a2.v1.ClipSpacePosition);//this.device.Project(a2.v1.Position, mvp);
+                Vector4 screenA2V2 = this.device.ViewPort(a2.v2.ClipSpacePosition);//this.device.Project(a2.v2.Position, mvp);
                 float r1 = (float)(i - (int)screenA1V1.Y) / (float)(screenA1V2.Y - screenA1V1.Y);
                 float r2 = (float)(i - (int)screenA2V1.Y) / (float)(screenA2V2.Y - screenA2V1.Y);
                 Color c1 = MathUtil.ColorInterp(a1.v1.Color, a1.v2.Color, r1);
@@ -108,10 +110,14 @@ namespace SimpleRenderEngine
                 float v1 = 0;
                 float u2 = 0;
                 float v2 = 0;
-                float w11 = mvp.Apply(a1.v1.Position).W;
-                float w12 = mvp.Apply(a1.v2.Position).W;
-                float w21 = mvp.Apply(a2.v1.Position).W;
-                float w22 = mvp.Apply(a2.v2.Position).W;
+                //float w11 = mvp.Apply(a1.v1.Position).W;
+                //float w12 = mvp.Apply(a1.v2.Position).W;
+                //float w21 = mvp.Apply(a2.v1.Position).W;
+                //float w22 = mvp.Apply(a2.v2.Position).W;
+                float w11 = a1.v1.ClipSpacePosition.W;
+                float w12 = a1.v2.ClipSpacePosition.W;
+                float w21 = a2.v1.ClipSpacePosition.W;
+                float w22 = a2.v2.ClipSpacePosition.W;
                 float w1 = 0;
                 float w2 = 0;
                 if (scene.renderState == Scene.RenderState.TextureMapping)
@@ -128,7 +134,7 @@ namespace SimpleRenderEngine
                 {
                     for (int x = (int)AEL.nextEdge.x; x < (int)AEL.nextEdge.nextEdge.x; x++)
                     {
-                        float r3 = (float)(x - (int)AEL.nextEdge.x) / (AEL.nextEdge.nextEdge.x - AEL.nextEdge.x);
+                        float r3 = MathUtil.Clamp01((float)(x - a1.x) / (a2.x - a1.x));
                         Color c3 = MathUtil.ColorInterp(c1, c2, r3);
                         float z = MathUtil.Interp(z1, z2, r3);
                         float nDotL = MathUtil.Interp(nDotL1, nDotL2, r3);

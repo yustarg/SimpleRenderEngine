@@ -46,63 +46,68 @@ namespace SimpleRenderEngine
                     clipPos.X = wMin.X;
                     clipPos.Y = p1.Y + (p2.Y - p1.Y) * m1;
                     clipPos.Z = p1.Z + (p2.Z - p1.Z) * m1;
-                    clipPos.W = 1;
+                    clipPos.W = p1.W + (p2.W - p1.W) * m1;
                     pos = MathUtil.Vector4Interp(v1.Position, v2.Position, m1);
                     col = MathUtil.ColorInterp(v1.Color, v2.Color, m1);
-                    normal = MathUtil.Vector4Interp(v1.Normal, v2.Normal, m1);
-                    uv = MathUtil.Vector4Interp(v1.UV, v2.UV, m1);                  
+                    normal = MathUtil.Vector4Interp(v1.Normal, v2.Normal, m1);            
                     break;
                 case Boundary.Right:
                     clipPos.X = wMax.X;
                     clipPos.Y = p1.Y + (p2.Y - p1.Y) * m2;
                     clipPos.Z = p1.Z + (p2.Z - p1.Z) * m2;
-                    clipPos.W = 1;
+                    clipPos.W = p1.W + (p2.W - p1.W) * m2;
                     pos = MathUtil.Vector4Interp(v1.Position, v2.Position, m2);
                     col = MathUtil.ColorInterp(v1.Color, v2.Color, m2);
                     normal = MathUtil.Vector4Interp(v1.Normal, v2.Normal, m2);
-                    uv = MathUtil.Vector4Interp(v1.UV, v2.UV, m2);
                     break;
                 case Boundary.Bottom:
                     clipPos.Y = wMin.Y;
                     clipPos.X = p1.X + (p2.X - p1.X) * m3;
                     clipPos.Z = p1.Z + (p2.Z - p1.Z) * m3;
-                    clipPos.W = 1;
+                    clipPos.W = p1.W + (p2.W - p1.W) * m3;
                     pos = MathUtil.Vector4Interp(v1.Position, v2.Position, m3);
                     col = MathUtil.ColorInterp(v1.Color, v2.Color, m3);
                     normal = MathUtil.Vector4Interp(v1.Normal, v2.Normal, m3);
-                    uv = MathUtil.Vector4Interp(v1.UV, v2.UV, m3);
                     break;
                 case Boundary.Top:
                     clipPos.Y = wMax.Y;
                     clipPos.X = p1.X + (p2.X - p1.X) * m4;
                     clipPos.Z = p1.Z + (p2.Z - p1.Z) * m4;
-                    clipPos.W = 1;
+                    clipPos.W = p1.W + (p2.W - p1.W) * m4;
                     pos = MathUtil.Vector4Interp(v1.Position, v2.Position, m4);
                     col = MathUtil.ColorInterp(v1.Color, v2.Color, m4);
                     normal = MathUtil.Vector4Interp(v1.Normal, v2.Normal, m4);
-                    uv = MathUtil.Vector4Interp(v1.UV, v2.UV, m4);
                     break;
                 case Boundary.Behind:
                     clipPos.Z = wMin.Z;
                     clipPos.X = p1.X + (p2.X - p1.X) * m5;
                     clipPos.Y = p1.Y + (p2.Y - p1.Y) * m5;
-                    clipPos.W = 1;
+                    clipPos.W = p1.W + (p2.W - p1.W) * m5;
                     pos = MathUtil.Vector4Interp(v1.Position, v2.Position, m5);
                     col = MathUtil.ColorInterp(v1.Color, v2.Color, m5);
-                    normal = MathUtil.Vector4Interp(v1.Normal, v2.Normal, m5);
-                    uv = MathUtil.Vector4Interp(v1.UV, v2.UV, m5);
+                    normal = MathUtil.Vector4Interp(v1.Normal, v2.Normal, m5);            
                     break;
                 case Boundary.Front:
                     clipPos.Z = wMax.Z;
                     clipPos.X = p1.X + (p2.X - p1.X) * m6;
                     clipPos.Y = p1.Y + (p2.Y - p1.Y) * m6;
-                    clipPos.W = 1;
+                    clipPos.W = p1.W + (p2.W - p1.W) * m6;
                     pos = MathUtil.Vector4Interp(v1.Position, v2.Position, m6);
                     col = MathUtil.ColorInterp(v1.Color, v2.Color, m6);
                     normal = MathUtil.Vector4Interp(v1.Normal, v2.Normal, m6);
-                    uv = MathUtil.Vector4Interp(v1.UV, v2.UV, m6);
                     break;
             }
+
+            Vector4 s1 = this.device.ViewPort(p1);
+            Vector4 s2 = this.device.ViewPort(p2);
+            Vector4 s3 = this.device.ViewPort(clipPos);
+            float r = 0;
+            if(s2.X - s1.X != 0) r = (float)(s3.X - s1.X) / (float)(s2.X - s1.X);
+            else r = (float)(s3.Y - s1.Y) / (float)(s2.Y - s1.Y);
+            float w = MathUtil.Interp(p1.W, p2.W, r);
+            float u = MathUtil.Interp(v1.UV.X / p1.W, v2.UV.X / p2.W, r);
+            float v = MathUtil.Interp(v1.UV.Y / p1.W, v2.UV.Y / p2.W, r);
+            uv = new Vector4(u * w, v * w, 0, 0);
 
             iPt.Position = pos;
             iPt.ClipSpacePosition = clipPos;

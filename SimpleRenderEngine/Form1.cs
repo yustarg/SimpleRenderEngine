@@ -118,6 +118,18 @@ namespace SimpleRenderEngine
             {
                 this.scene.UpdateCameraPos(new Vector4(oriX, oriY - MoveSpeed, oriZ, 1));
             }
+            else if (keyData == Keys.A)
+            {
+                float newX = (float)(oriX * Math.Cos(RotateSpeed) - oriZ * Math.Sin(RotateSpeed));
+                float newZ = (float)(oriX * Math.Sin(RotateSpeed) + oriZ * Math.Cos(RotateSpeed));
+                this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
+            }
+            else if (keyData == Keys.D)
+            {
+                float newX = (float)(oriX * Math.Cos(-RotateSpeed) - oriZ * Math.Sin(-RotateSpeed));
+                float newZ = (float)(oriX * Math.Sin(-RotateSpeed) + oriZ * Math.Cos(-RotateSpeed));
+                this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
+            }
             this.device.Clear();
             this.Invalidate();
             return true;
