@@ -17,7 +17,7 @@ namespace SimpleRenderEngine
         public Mesh(string name)
         {
             Name = name;
-            texture = new Texture(@"..\..\textures\background1.jpg", 2048, 1206); //2048, 1206);//706, 530);
+            texture = new Texture(@"..\..\textures\background1.jpg", 512, 512);//706, 530);
         }
 
         public void SetVertices(Vertex[] vertices)
