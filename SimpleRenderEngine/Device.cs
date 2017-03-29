@@ -195,15 +195,124 @@ namespace SimpleRenderEngine
             }
         }
 
-        public void DrawTriangle(Vertex p1, Vertex p2, Vertex p3, Matrix4x4 mvp, Scene scene)
+        public void DrawTriangle(VertexTriangle vt, Scene scene)
         {
-            Vertex[] vertices = new Vertex[3];
-            vertices[0] = p1;
-            vertices[1] = p2;
-            vertices[2] = p3;
-
-            this.scanLine.ProcessScanLine(vertices, scene);
+            Vector4 normal = vt.VertexA.Normal;
+            Vector4 dir = scene.camera.GetDir();
+            float dot = Vector4.Dot(dir, normal);
+            if (dot > 0) return;
+            this.scanLine.ProcessScanLine(vt, scene);
         }
+
+        /*
+        public void DrawTriangle(VertexTriangle vt, Scene scene)
+        {
+            Vector4 normal = vt.VertexA.Normal;
+            Vector4 dir = scene.camera.GetDir();
+            float dot = Vector4.Dot(dir, normal);
+            if (dot > 0) return;
+
+            List<Vertex> vList = new List<Vertex>();
+            vList.Add(vt.VertexA);
+            vList.Add(vt.VertexB);
+            vList.Add(vt.VertexC);
+            vList.Sort();
+
+            //Vector4 p1 = this.ViewPort(vList[0].ClipSpacePosition);
+            //Vector4 p2 = this.ViewPort(vList[1].ClipSpacePosition);
+            //Vector4 p3 = this.ViewPort(vList[2].ClipSpacePosition);   
+            Vector4 p1 = vList[0].ScreenSpacePosition;
+            Vector4 p2 = vList[1].ScreenSpacePosition;
+            Vector4 p3 = vList[2].ScreenSpacePosition;       
+
+            //if (p1.Y > p2.Y)
+            //{
+            //    var temp = p2;
+            //    p2 = p1;
+            //    p1 = temp;
+            //}
+
+            //if (p2.Y > p3.Y)
+            //{
+            //    var temp = p2;
+            //    p2 = p3;
+            //    p3 = temp;
+            //}
+
+            //if (p1.Y > p2.Y)
+            //{
+            //    var temp = p2;
+            //    p2 = p1;
+            //    p1 = temp;
+            //}
+
+            float dP1P2, dP1P3, dP2P3;
+            if (p2.Y - p1.Y > 0)
+                dP1P2 = (p2.X - p1.X) / (p2.Y - p1.Y);
+            else
+                dP1P2 = 0;
+
+            if (p3.Y - p1.Y > 0)
+                dP1P3 = (p3.X - p1.X) / (p3.Y - p1.Y);
+            else
+                dP1P3 = 0;
+
+            if (p3.Y - p2.Y > 0)
+                dP2P3 = (p3.X - p2.X) / (p3.Y - p2.Y);
+            else
+                dP2P3 = 0;
+
+            if(dP1P2 == 0)
+            {
+                if (p1.X > p2.X)
+                {
+                    var temp = vList[0];
+                    vList[0] = vList[1];
+                    vList[1] = temp;
+                }
+                for (var y = (int)p1.Y; y <= (int)p3.Y; y++)
+                {
+                    //this.scanLine.ProcessScanLineAd(y, p1, p3, p2, p3, scene);
+                    this.scanLine.ProcessScanLineAd(y, vList[0], vList[2], vList[1], vList[2], scene);
+                }
+            }
+            else
+            {
+                if (dP1P2 > dP1P3)
+                {
+                    for (var y = (int)p1.Y; y <= (int)p3.Y; y++)
+                    {
+                        if (y < p2.Y)
+                        {
+                            //this.scanLine.ProcessScanLineAd(y, p1, p3, p1, p2, scene);
+                            this.scanLine.ProcessScanLineAd(y, vList[0], vList[2], vList[0], vList[1], scene);
+                        }
+                        else
+                        {
+                            //this.scanLine.ProcessScanLineAd(y, p1, p3, p2, p3, scene);
+                            this.scanLine.ProcessScanLineAd(y, vList[0], vList[2], vList[1], vList[2], scene);
+                        }
+                    }
+                }
+                else
+                {
+                    for (var y = (int)p1.Y; y <= (int)p3.Y; y++)
+                    {
+                        if (y < p2.Y)
+                        {
+                            //this.scanLine.ProcessScanLineAd(y, p1, p2, p1, p3, scene);
+                            this.scanLine.ProcessScanLineAd(y, vList[0], vList[1], vList[0], vList[2], scene);
+                        }
+                        else
+                        {
+                            //this.scanLine.ProcessScanLineAd(y, p2, p3, p1, p3, scene);
+                            this.scanLine.ProcessScanLineAd(y, vList[1], vList[2], vList[0], vList[2], scene);
+                        }
+                    }
+                }
+            }
+        }
+        */
 
         public Matrix4x4 GetMvpMatrix()
         {
@@ -216,7 +325,6 @@ namespace SimpleRenderEngine
             Matrix4x4 model = scale * rotate * translate;
             Matrix4x4 view = this.scene.camera.LookAt();
             Matrix4x4 projection = this.scene.camera.Perspective();
-
             return model * view * projection;
         }
 
@@ -232,15 +340,14 @@ namespace SimpleRenderEngine
                 Vertex vertexB = scene.mesh.Vertices[triangle.BIndex];
                 Vertex vertexC = scene.mesh.Vertices[triangle.CIndex];
 
-                //Vector4 pixelA = Project(vertexA.Position, matrixMVP);
-                //Vector4 pixelB = Project(vertexB.Position, matrixMVP);
-                //Vector4 pixelC = Project(vertexC.Position, matrixMVP);
-
                 List<Vertex> pIn = new List<Vertex>();
  
                 vertexA.ClipSpacePosition = this.ClipSpace(vertexA.Position, matrixMVP);
                 vertexB.ClipSpacePosition = this.ClipSpace(vertexB.Position, matrixMVP);
                 vertexC.ClipSpacePosition = this.ClipSpace(vertexC.Position, matrixMVP);
+                vertexA.ScreenSpacePosition = this.ViewPort(vertexA.ClipSpacePosition);
+                vertexB.ScreenSpacePosition = this.ViewPort(vertexB.ClipSpacePosition);
+                vertexC.ScreenSpacePosition = this.ViewPort(vertexC.ClipSpacePosition);
                
                 pIn.Add(vertexA);
                 pIn.Add(vertexB);
@@ -248,6 +355,7 @@ namespace SimpleRenderEngine
 
                 for (int i = 0; i < 6; i++)
                 {
+                    if (pIn.Count == 0) break;
                     clip = new HodgmanClip(this);
                     clip.HodgmanPolygonClip((HodgmanClip.Boundary)i, wMin, wMax, pIn.ToArray());
                     pIn = clip.GetOutputList();
@@ -286,11 +394,11 @@ namespace SimpleRenderEngine
                 }
                 else
                 {        
-                    // 填充三角形
-                    //DrawTriangle(vertexA, vertexB, vertexC, matrixMVP, scene);                    
+                    // 填充三角形                  
                     for (int i = 0; i < vtList.Count; i++)
                     {
-                        DrawTriangle(vtList[i].VertexA, vtList[i].VertexB, vtList[i].VertexC, matrixMVP, scene);
+                        //DrawTriangle(vtList[i], scene);
+                        DrawTriangle(vtList[i], scene);
                     }
                 }
             }

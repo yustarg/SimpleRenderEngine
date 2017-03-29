@@ -4,8 +4,8 @@ namespace SimpleRenderEngine
 {
     public class DirectionalLight
     {
-        public static Color4 AmbientColor = new Color4(0, 20, 0);
-        private const float MAXKD = 1f;
+        public static Color4 AmbientColor = new Color4(50, 0, 0);
+        private const float MAXKD = 2f;
 
         public bool IsEnable { get; set; }
         public Vector4 LightPos { get; set; }

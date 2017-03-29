@@ -87,7 +87,7 @@ namespace SimpleRenderEngine
 
         private void InitLight()
         {
-            this.light = new DirectionalLight(new Vector4(-2, 2, 0, 1), new Color4(255, 255, 255));
+            this.light = new DirectionalLight(new Vector4(-5, 5, 5, 1), new Color4(255, 255, 255));
             this.light.IsEnable = false;
         }
 

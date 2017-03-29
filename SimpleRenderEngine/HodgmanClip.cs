@@ -108,6 +108,7 @@ namespace SimpleRenderEngine
 
             iPt.Position = pos;
             iPt.ClipSpacePosition = clipPos;
+            iPt.ScreenSpacePosition = this.device.ViewPort(clipPos);
             iPt.Normal = normal;
             iPt.UV = uv;
             iPt.Color = col;

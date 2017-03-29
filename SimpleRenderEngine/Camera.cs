@@ -27,6 +27,11 @@ namespace SimpleRenderEngine
             this.zf = zf;
         }
 
+        public Vector4 GetDir()
+        {
+            return (Target - Position).Normalized;
+        }
+
         // 计算观察矩阵
         public Matrix4x4 LookAt()
         {

@@ -17,7 +17,7 @@ namespace SimpleRenderEngine
         public Mesh(string name)
         {
             Name = name;
-            texture = new Texture(@"..\..\textures\background.jpg", 706, 530); //2048, 1206);//706, 530);
+            texture = new Texture(@"..\..\textures\background1.jpg", 2048, 1206); //2048, 1206);//706, 530);
         }
 
         public void SetVertices(Vertex[] vertices)
@@ -51,10 +51,11 @@ namespace SimpleRenderEngine
         }
     }
 
-    public class Vertex
+    public class Vertex : IComparable<Vertex>
     {
         public Vector4 Position { get; set; }
         public Vector4 ClipSpacePosition { get; set; }
+        public Vector4 ScreenSpacePosition { get; set; }
         public Vector4 Normal { get; set; }
         public Vector4 UV { get; set; }
         public Color4 Color { get; set; }
@@ -67,6 +68,15 @@ namespace SimpleRenderEngine
             this.Normal = normal;
             this.UV = uv;
             this.Color = col;
+        }
+
+        public int CompareTo(Vertex other)
+        {
+            if ((int)this.ScreenSpacePosition.Y > (int)other.ScreenSpacePosition.Y)
+            {
+                return 1;
+            }
+            return -1;
         }
     }
 }
