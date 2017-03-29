@@ -124,7 +124,7 @@ namespace SimpleRenderEngine
 
         public void DrawPoint(Vector4 point, Color4 c)
         {
-            if (point.X >= 0 && point.Y >= 0 && point.X <= GetWidth() && point.Y <= GetHeight())
+            //if (point.X >= 0 && point.Y >= 0 && point.X <= GetWidth() && point.Y <= GetHeight())
             {
                 if (point.X == GetWidth()) point.X = point.X - 1;
                 if (point.Y == GetHeight()) point.Y = point.Y - 1;
