@@ -30,6 +30,14 @@ namespace SimpleRenderEngine
             return new Color4((byte)(r * 255), (byte)(g * 255), (byte)(b * 255));
         }
 
+        public static Color4 operator *(Color4 c1, float t)
+        {
+            byte r = (byte)Math.Min((c1.X * t), 255);
+            byte g = (byte)Math.Min((c1.Y * t), 255);
+            byte b = (byte)Math.Min((c1.Z * t), 255);
+            return new Color4(r, g, b);
+        }
+
         public static Color4 operator +(Color4 c1, Color4 c2)
         {
             byte r = (byte)Math.Min(c1.X + c2.X, 255);

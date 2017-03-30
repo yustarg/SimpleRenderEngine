@@ -31,7 +31,13 @@ namespace SimpleRenderEngine
         public float Weight2 { get; set; }
         
         // 做三角形重心插值时的二元一次方程组系数
+        // P.x = (1 - u - v) * P1.x + u * P2.x + v * P3.x
+        // P.y = (1 - u - v) * P1.y + u * P2.y + v * P3.y
         private int a, b, c, d, dn1, dn2;
+        private float u1, v1;
+        private float u2, v2;
+        private float u3, v3;
+        private float w1, w2, w3;
 
         public VertexTriangle(Vertex a, Vertex b, Vertex c)
         {
@@ -50,8 +56,19 @@ namespace SimpleRenderEngine
             d = (int)(p3.Y - p1.Y);
             dn1 = (b * c - a * d);
             dn2 = (a * d - b * c);
+
+            u1 = Vertices[0].UV.X / Vertices[0].ClipSpacePosition.W;
+            u2 = Vertices[1].UV.X / Vertices[1].ClipSpacePosition.W;
+            u3 = Vertices[2].UV.X / Vertices[2].ClipSpacePosition.W;
+            v1 = Vertices[0].UV.Y / Vertices[0].ClipSpacePosition.W;
+            v2 = Vertices[1].UV.Y / Vertices[1].ClipSpacePosition.W;
+            v3 = Vertices[2].UV.Y / Vertices[2].ClipSpacePosition.W;
+            w1 = 1f / Vertices[0].ClipSpacePosition.W;
+            w2 = 1f / Vertices[1].ClipSpacePosition.W;
+            w3 = 1f / Vertices[2].ClipSpacePosition.W;
         }
 
+        // 插值之前必须先算权重
         public void CalWeight(Vector4 p)
         {
             Vector4 p1 = this.Vertices[0].ScreenSpacePosition;            
@@ -61,14 +78,6 @@ namespace SimpleRenderEngine
             this.Weight2 = (float)(a * n - c * m) / (float)dn2;
         }
 
-        //public Color4 GetInterColor()
-        //{
-        //    byte r = (byte)((1 - Weight1 - Weight2) * (float)VertexA.Color.X + Weight1 * (float)VertexB.Color.X + Weight2 * (float)VertexC.Color.X);
-        //    byte g = (byte)((1 - Weight1 - Weight2) * (float)VertexA.Color.Y + Weight1 * (float)VertexB.Color.Y + Weight2 * (float)VertexC.Color.Y);
-        //    byte b = (byte)((1 - Weight1 - Weight2) * (float)VertexA.Color.Z + Weight1 * (float)VertexB.Color.Z + Weight2 * (float)VertexC.Color.Z);
-        //    return new Color4(r, g, b);
-        //}
-
         public float GetInterValue(float a, float b, float c)
         {
             return ((1 - Weight1 - Weight2) * a + Weight1 * b + Weight2 * c);
@@ -76,9 +85,9 @@ namespace SimpleRenderEngine
 
         public Vector4 GetInterUV()
         {
-            float u = GetInterValue(Vertices[0].UV.X / Vertices[0].ClipSpacePosition.W, Vertices[1].UV.X / Vertices[1].ClipSpacePosition.W, Vertices[2].UV.X / Vertices[2].ClipSpacePosition.W);
-            float v = GetInterValue(Vertices[0].UV.Y / Vertices[0].ClipSpacePosition.W, Vertices[1].UV.Y / Vertices[1].ClipSpacePosition.W, Vertices[2].UV.Y / Vertices[2].ClipSpacePosition.W);
-            float w = GetInterValue(1f / Vertices[0].ClipSpacePosition.W, 1f / Vertices[1].ClipSpacePosition.W, 1f / Vertices[2].ClipSpacePosition.W);
+            float u = GetInterValue(u1, u2, u3);
+            float v = GetInterValue(v1, v2, v3);
+            float w = GetInterValue(w1, w2, w3);
             return new Vector4(u / w, v / w, 0, 0);
         }
     }

@@ -3,6 +3,7 @@
 *.suo
 *.press
 *.vsp
-obj
-bin
+obj 
+bin 
 Debug
+ Release

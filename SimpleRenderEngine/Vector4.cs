@@ -41,6 +41,16 @@ namespace SimpleRenderEngine
             return new Vector4(a.X - b.X, a.Y - b.Y, a.Z - b.Z, 1);
         }
 
+        public static Vector4 operator /(Vector4 a, float t)
+        {
+            return new Vector4(a.X / t, a.Y / t, a.Z / t, 1);
+        }
+
+        public static Vector4 operator *(Vector4 a, float t)
+        {
+            return new Vector4(a.X * t, a.Y * t, a.Z * t, 1); ;
+        }
+
         public static float Dot(Vector4 a, Vector4 b)
         {
             return a.X * b.X + a.Y * b.Y + a.Z * b.Z;

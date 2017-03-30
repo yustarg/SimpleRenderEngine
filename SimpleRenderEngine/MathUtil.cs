@@ -8,9 +8,7 @@ using System.Drawing;
 namespace SimpleRenderEngine
 {
     public class MathUtil
-    {
-        public const float PI = 3.1415926f; 
-        
+    {        
         public static float Clamp01(float t)
         {
             if (t.CompareTo(0) < 0) return 0;
@@ -32,31 +30,11 @@ namespace SimpleRenderEngine
         // 矢量插值，t取值 [0, 1]
         public static Vector4 Vector4Interp(Vector4 x1, Vector4 x2, float t)
         {
-            t = Clamp01(t);
+            //t = Clamp01(t);
             Vector4 val = new Vector4();
             val.X = Interp(x1.X, x2.X, t);
             val.Y = Interp(x1.Y, x2.Y, t);
             val.Z = Interp(x1.Z, x2.Z, t);
-            val.W = 1.0f;
-            return val;
-        }
-
-        public static Vector4 Vector4Mul(Vector4 x1, float t)
-        {
-            Vector4 val = new Vector4();
-            val.X = x1.X * t;
-            val.Y = x1.Y * t;
-            val.Z = x1.Z * t;
-            val.W = 1.0f;
-            return val;
-        }
-
-        public static Vector4 Vector4Divide(Vector4 x1, float t)
-        {
-            Vector4 val = new Vector4();
-            val.X = x1.X / t;
-            val.Y = x1.Y / t;
-            val.Z = x1.Z / t;
             val.W = 1.0f;
             return val;
         }
@@ -66,14 +44,6 @@ namespace SimpleRenderEngine
             byte r = Interp(c1.X, c2.X, t);
             byte g = Interp(c1.Y, c2.Y, t);
             byte b = Interp(c1.Z, c2.Z, t);
-            return new Color4(r, g, b);
-        }
-
-        public static Color4 MulColor(Color4 c1, float t)
-        {
-            byte r = (byte)Math.Min((c1.X * t), 255);
-            byte g = (byte)Math.Min((c1.Y * t), 255);
-            byte b = (byte)Math.Min((c1.Z * t), 255);
             return new Color4(r, g, b);
         }
     }

@@ -47,27 +47,23 @@ namespace SimpleRenderEngine
         {
             BitmapData data = this.bmp.LockBits(rt, ImageLockMode.ReadWrite, this.pixelFormat);
             this.device.Clear(data);
-            g = pe.Graphics;
             device.Render(scene, data);
             this.bmp.UnlockBits(data);
-            g.DrawImage(this.bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
-        }
-
-        public void DrawInmediately()
-        {
+            g = pe.Graphics;
             g.DrawImage(this.bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             this.Paint += new PaintEventHandler(Form1_Paint);
-            this.MouseMove += new MouseEventHandler(Form1_OnMouseMove);
             this.MouseWheel += new MouseEventHandler(Form1_OnMouseWheel);
+            this.MouseMove += new MouseEventHandler(Form1_OnMouseMove);
         }
 
         private const float MoveSpeed = 0.5f;
         private const float RotateSpeed = 5f * (float)Math.PI / 180f;
         private int mouseX = 0;
+        
         private void Form1_OnMouseMove(object sender, MouseEventArgs e)
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Left)

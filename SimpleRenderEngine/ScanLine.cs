@@ -196,7 +196,7 @@ namespace SimpleRenderEngine
                 {
                     for (int x = (int)AEL.nextEdge.x; x < (int)AEL.nextEdge.nextEdge.x; x++)
                     {
-                        float r3 = MathUtil.Clamp01(((float)x - AEL.nextEdge.x) / (AEL.nextEdge.nextEdge.x - AEL.nextEdge.x)); 
+                        float r3 = MathUtil.Clamp01(((float)x - a1.x) / (a2.x - a1.x)); 
                         //float r3 = (float)(x - Math.Floor(a1.x)) / (a2.x - a1.x);    
                         float z = MathUtil.Interp(z1, z2, r3);
                         if (scene.renderState == Scene.RenderState.GouraudShading)

@@ -42,12 +42,13 @@ namespace SimpleRenderEngine
 
         public Color4 GetDiffuseColor(float nDotL)
         {
-            return MathUtil.MulColor(MathUtil.MulColor(LightColor, nDotL), Kd);
+            //return MathUtil.MulColor(MathUtil.MulColor(LightColor, nDotL), Kd);
+            return LightColor * (nDotL * Kd);
         }
 
         public Color4 GetFinalLightColor(float nDotL)
         {
-            Color4 diffuse = MathUtil.MulColor(MathUtil.MulColor(LightColor, nDotL), Kd);
+            Color4 diffuse = GetDiffuseColor(nDotL);
             Color4 final = diffuse + DirectionalLight.AmbientColor;
             return final;
         }
