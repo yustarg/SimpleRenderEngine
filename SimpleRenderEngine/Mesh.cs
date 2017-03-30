@@ -51,7 +51,7 @@ namespace SimpleRenderEngine
         }
     }
 
-    public class Vertex : IComparable<Vertex>
+    public class Vertex
     {
         public Vector4 Position { get; set; }
         public Vector4 ClipSpacePosition { get; set; }
@@ -68,15 +68,6 @@ namespace SimpleRenderEngine
             this.Normal = normal;
             this.UV = uv;
             this.Color = col;
-        }
-
-        public int CompareTo(Vertex other)
-        {
-            if ((int)this.ScreenSpacePosition.Y > (int)other.ScreenSpacePosition.Y)
-            {
-                return 1;
-            }
-            return -1;
         }
     }
 }

@@ -19,8 +19,8 @@ namespace SimpleRenderEngine
         {
             this.device = device;
             this.height = device.GetHeight();
-            this.ET = new Edge[device.GetHeight()];
-            for (int i = 0; i < device.GetHeight(); i++)
+            this.ET = new Edge[this.height];
+            for (int i = 0; i < this.height; i++)
             {
                 this.ET[i] = new Edge();
             }
@@ -98,15 +98,15 @@ namespace SimpleRenderEngine
         #endregion
 
         // 需要屏幕坐标
-        public void ProcessScanLine(VertexTriangle vt, Scene scene)
+        public void ProcessScanLine(VertexTriangle vt, VertexTriangle oriVt, Scene scene)
         {
             int yMin = this.height;
             int yMax = 0;
 
-            Vertex[] vertices = new Vertex[3];
-            vertices[0] = vt.VertexA;
-            vertices[1] = vt.VertexB;
-            vertices[2] = vt.VertexC;
+            Vertex[] vertices = vt.Vertices;
+            //vertices[0] = vt.VertexA;
+            //vertices[1] = vt.VertexB;
+            //vertices[2] = vt.VertexC;
 
             for (int i = 0; i < vertices.Length; i++)
             {
@@ -114,8 +114,6 @@ namespace SimpleRenderEngine
                 {
                     Vector4 screen1 = vertices[i].ScreenSpacePosition;
                     Vector4 screen2 = vertices[j].ScreenSpacePosition;
-                    //Vector4 screen1 = this.device.ViewPort(vertices[i].ClipSpacePosition);
-                    //Vector4 screen2 = this.device.ViewPort(vertices[j].ClipSpacePosition);
 
                     if ((int)screen1.Y != (int)screen2.Y)
                     {
@@ -135,7 +133,7 @@ namespace SimpleRenderEngine
                         int ymax = y1 > y2 ? y1 : y2;
                         if (ymax > this.height) ymax = this.height;
                         float x = y1 > y2 ? x2 : x1;
-                        float dx = (x1 - x2) * 1.0f / (y1 - y2);
+                        float dx = (float)(x1 - x2) * 1.0f / (float)(y1 - y2);
                         Edge e = new Edge();
                         e.yMax = ymax;
                         e.x = x;
@@ -164,17 +162,15 @@ namespace SimpleRenderEngine
                 Edge a1 = (Edge)AEL.nextEdge.Clone();
                 Edge a2 = (Edge)AEL.nextEdge.nextEdge.Clone();
 
-                // 插值
-                //Vector4 screenA1V1 = this.device.ViewPort(a1.v1.ClipSpacePosition); //this.device.Project(a1.v1.Position, mvp);
-                //Vector4 screenA1V2 = this.device.ViewPort(a1.v2.ClipSpacePosition);//this.device.Project(a1.v2.Position, mvp);
-                //Vector4 screenA2V1 = this.device.ViewPort(a2.v1.ClipSpacePosition);//this.device.Project(a2.v1.Position, mvp);
-                //Vector4 screenA2V2 = this.device.ViewPort(a2.v2.ClipSpacePosition);//this.device.Project(a2.v2.Position, mvp);
+                // 双线性插值
                 Vector4 screenA1V1 = a1.v1.ScreenSpacePosition;
                 Vector4 screenA1V2 = a1.v2.ScreenSpacePosition;
                 Vector4 screenA2V1 = a2.v1.ScreenSpacePosition;
                 Vector4 screenA2V2 = a2.v2.ScreenSpacePosition;
-                float r1 = (float)(i - (int)screenA1V1.Y) / (float)(screenA1V2.Y - screenA1V1.Y);
-                float r2 = (float)(i - (int)screenA2V1.Y) / (float)(screenA2V2.Y - screenA2V1.Y);
+                float r1 = ((float)i - screenA1V1.Y) / (float)(screenA1V2.Y - screenA1V1.Y);
+                float r2 = ((float)i - screenA2V1.Y) / (float)(screenA2V2.Y - screenA2V1.Y);
+                r1 = MathUtil.Clamp01(r1);
+                r2 = MathUtil.Clamp01(r2);
                 float z1 = MathUtil.Interp(screenA1V1.Z, screenA1V2.Z, r1);
                 float z2 = MathUtil.Interp(screenA2V1.Z, screenA2V2.Z, r2);
 
@@ -191,70 +187,34 @@ namespace SimpleRenderEngine
                 Color4 c1 = MathUtil.ColorInterp(a1.v1.Color, a1.v2.Color, r1);
                 Color4 c2 = MathUtil.ColorInterp(a2.v1.Color, a2.v2.Color, r2);
                 Color4 c3 = null;
-
-                float u1 = 0, v1 = 0, u2 = 0, v2 = 0, w1 = 0, w2 = 0;
                 if (scene.renderState == Scene.RenderState.TextureMapping)
                 {
-                    float w11 = a1.v1.ClipSpacePosition.W;
-                    float w12 = a1.v2.ClipSpacePosition.W;
-                    float w21 = a2.v1.ClipSpacePosition.W;
-                    float w22 = a2.v2.ClipSpacePosition.W;
-                    u1 = MathUtil.Interp(a1.v1.UV.X / w11, a1.v2.UV.X / w12, r1);
-                    v1 = MathUtil.Interp(a1.v1.UV.Y / w11, a1.v2.UV.Y / w12, r1);
-                    u2 = MathUtil.Interp(a2.v1.UV.X / w21, a2.v2.UV.X / w22, r2);
-                    v2 = MathUtil.Interp(a2.v1.UV.Y / w21, a2.v2.UV.Y / w22, r2);
-                    w1 = MathUtil.Interp(1 / w11, 1 / w12, r1);
-                    w2 = MathUtil.Interp(1 / w21, 1 / w22, r2);
+                    oriVt.PreCalWeight();
                 }
                        
                 while (a1 != null && a2 != null)
                 {
                     for (int x = (int)AEL.nextEdge.x; x < (int)AEL.nextEdge.nextEdge.x; x++)
                     {
-                        //float r3 = MathUtil.Clamp01((float)(x - a1.x) / (a2.x - a1.x)); 
-                        float r3 = (float)(x - Math.Floor(a1.x)) / (a2.x - a1.x);    
+                        float r3 = MathUtil.Clamp01(((float)x - AEL.nextEdge.x) / (AEL.nextEdge.nextEdge.x - AEL.nextEdge.x)); 
+                        //float r3 = (float)(x - Math.Floor(a1.x)) / (a2.x - a1.x);    
                         float z = MathUtil.Interp(z1, z2, r3);
                         if (scene.renderState == Scene.RenderState.GouraudShading)
                         {
                             if (scene.light.IsEnable)
                             {
                                 float nDotL = MathUtil.Interp(nDotL1, nDotL2, r3);
-                                //final = scene.light.GetFinalLightColor(nDotL);
                                 c3 = MathUtil.ColorInterp(c1, c2, r3);
                                 final = c3 * scene.light.GetDiffuseColor(nDotL) + DirectionalLight.AmbientColor;
                             }
                             else
                             {
                                 c3 = MathUtil.ColorInterp(c1, c2, r3);
-                                //vt.CalWeight(s1, s2, s3, new Vector4(x, i, 0, 0));
-                                //Color4 c3 = vt.GetInterColor();
                                 final = c3;
                             }
                         }
                         else if (scene.renderState == Scene.RenderState.TextureMapping)
-                        {
-                            //float w11 = mvp.Apply(a1.v1.Position).W;
-                            //float w12 = mvp.Apply(a1.v2.Position).W;
-                            //float w21 = mvp.Apply(a2.v1.Position).W;
-                            //float w22 = mvp.Apply(a2.v2.Position).W;
-                            //vt.CalWeight(s1, s2, s3, new Vector4(x, i, 0, 0));
-                            //float weight1 = vt.Weight1;
-                            //float weight2 = vt.Weight2;
-                     
-                            //float u = vt.GetInterValue(vt.VertexA.UV.X / vt.VertexA.ClipSpacePosition.W,
-                            //                            vt.VertexB.UV.X / vt.VertexB.ClipSpacePosition.W,
-                            //                            vt.VertexC.UV.X / vt.VertexC.ClipSpacePosition.W);
-                            //float v = vt.GetInterValue(vt.VertexA.UV.Y / vt.VertexA.ClipSpacePosition.W,
-                            //                            vt.VertexB.UV.Y / vt.VertexB.ClipSpacePosition.W,
-                            //                            vt.VertexC.UV.Y / vt.VertexC.ClipSpacePosition.W);
-                            //float w = vt.GetInterValue(1f / vt.VertexA.ClipSpacePosition.W, 
-                            //                            1f / vt.VertexB.ClipSpacePosition.W,
-                            //                            1f / vt.VertexC.ClipSpacePosition.W);
-
-                           
-                            float w = MathUtil.Interp(w1, w2, r3);
-                            float u3 = MathUtil.Interp(u1 / w, u2 / w, r3);
-                            float v3 = MathUtil.Interp(v1 / w, v2 / w, r3);
+                        {                           
                             /*if (scene.light.IsEnable)
                             {
                                 float nDotLA1V1 = scene.light.ComputeNDotL(a1.v1.Position, a1.v1.Normal);
@@ -267,8 +227,10 @@ namespace SimpleRenderEngine
                                 final = this.device.Tex2D(u3, v3, scene.mesh.texture) * scene.light.GetDiffuseColor(nDotL);
                                 final += DirectionalLight.AmbientColor;
                             }*/
-                            final = this.device.Tex2D(u3, v3, scene.mesh.texture);
-                            //final = this.device.Tex2D(u / w, v / w, scene.mesh.texture);
+
+                            oriVt.CalWeight(new Vector4(x, i, 0, 0));
+                            Vector4 uv = oriVt.GetInterUV();
+                            final = this.device.Tex2D(uv.X, uv.Y, scene.mesh.texture);
                         }
                         this.device.DrawPoint(new Vector4(x, i, z, 0), final);
                     }

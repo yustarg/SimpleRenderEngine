@@ -53,6 +53,11 @@ namespace SimpleRenderEngine
             g.DrawImage(this.bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
         }
 
+        public void DrawInmediately()
+        {
+            g.DrawImage(this.bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
             this.Paint += new PaintEventHandler(Form1_Paint);
@@ -93,9 +98,9 @@ namespace SimpleRenderEngine
             float oriY = this.scene.camera.Position.Y;
             float oriZ = this.scene.camera.Position.Z;
             Vector4 dir = this.scene.camera.Position.Normalized;
-            float x = Vector4.Dot(dir, new Vector4(1, 0, 0, 1)) * MoveSpeed;
-            float y = Vector4.Dot(dir, new Vector4(0, 1, 0, 1)) * MoveSpeed;
-            float z = Vector4.Dot(dir, new Vector4(0, 0, 1, 1)) * MoveSpeed;
+            float x = Vector4.Dot(dir, new Vector4(1, 0, 0, 1)) * MoveSpeed * 0.5f;
+            float y = Vector4.Dot(dir, new Vector4(0, 1, 0, 1)) * MoveSpeed * 0.5f;
+            float z = Vector4.Dot(dir, new Vector4(0, 0, 1, 1)) * MoveSpeed * 0.5f;
 
             if (e.Delta < 0)
             {

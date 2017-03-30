@@ -100,5 +100,19 @@ namespace SimpleRenderEngine
         {
             this.camera.Yaw += degree;
         }
+
+        public Matrix4x4 GetMvpMatrix()
+        {
+            Matrix4x4 translate = new Matrix4x4();
+            translate.SetTranslate(0, 0, 0);
+            Matrix4x4 scale = new Matrix4x4();
+            scale.SetScale(1, 1, 1);
+            Matrix4x4 rotate = new Matrix4x4();
+            rotate.SetRotate(0, 0, 0);
+            Matrix4x4 model = scale * rotate * translate;
+            Matrix4x4 view = this.camera.LookAt();
+            Matrix4x4 projection = this.camera.Perspective();
+            return model * view * projection;
+        }
     }
 }

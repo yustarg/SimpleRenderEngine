@@ -134,12 +134,12 @@ namespace SimpleRenderEngine
 
         public Color4 Tex2D(float u, float v, Texture texture)
         {
-            int x = Math.Abs((int)((1 - u) * texture.GetWidth()) % texture.GetWidth());
-            int y = Math.Abs((int)((1 - v) * texture.GetHeight()) % texture.GetHeight());
+            int x = Math.Abs((int)((1f - u) * texture.GetWidth()) % texture.GetWidth());
+            int y = Math.Abs((int)((1f - v) * texture.GetHeight()) % texture.GetHeight());
 
-            int r = 0;
-            int g = 0;
-            int b = 0;
+            byte r = 0;
+            byte g = 0;
+            byte b = 0;
         
             unsafe
             {
@@ -195,13 +195,13 @@ namespace SimpleRenderEngine
             }
         }
 
-        public void DrawTriangle(VertexTriangle vt, Scene scene)
+        public void DrawTriangle(VertexTriangle vt, VertexTriangle oriVt, Scene scene)
         {
-            Vector4 normal = vt.VertexA.Normal;
+            Vector4 normal = vt.Vertices[0].Normal;
             Vector4 dir = scene.camera.GetDir();
             float dot = Vector4.Dot(dir, normal);
             if (dot > 0) return;
-            this.scanLine.ProcessScanLine(vt, scene);
+            this.scanLine.ProcessScanLine(vt, oriVt, scene);
         }
 
         /*
@@ -314,25 +314,13 @@ namespace SimpleRenderEngine
         }
         */
 
-        public Matrix4x4 GetMvpMatrix()
-        {
-            Matrix4x4 translate = new Matrix4x4();
-            translate.SetTranslate(0, 0, 0);
-            Matrix4x4 scale = new Matrix4x4();
-            scale.SetScale(1, 1, 1);
-            Matrix4x4 rotate = new Matrix4x4();
-            rotate.SetRotate(0, 0, 0);
-            Matrix4x4 model = scale * rotate * translate;
-            Matrix4x4 view = this.scene.camera.LookAt();
-            Matrix4x4 projection = this.scene.camera.Perspective();
-            return model * view * projection;
-        }
+        
 
         public void Render(Scene scene, BitmapData bmData)
         {
             this.scene = scene;
             this.bmData = bmData;
-            Matrix4x4 matrixMVP = this.GetMvpMatrix();
+            Matrix4x4 matrixMVP = this.scene.GetMvpMatrix();
 
             foreach (var triangle in scene.mesh.triangles)
             {
@@ -365,40 +353,29 @@ namespace SimpleRenderEngine
                 if (scene.renderState == Scene.RenderState.WireFrame)
                 {       
                     // 画线框, 需要vertex的normal,pos,color
-                    //DrawLine(vertexA, vertexB, this.ViewPort(vertexA.ClipSpacePosition), this.ViewPort(vertexB.ClipSpacePosition), scene);
-                    //DrawLine(vertexB, vertexC, this.ViewPort(vertexB.ClipSpacePosition), this.ViewPort(vertexC.ClipSpacePosition), scene);
-                    //DrawLine(vertexC, vertexA, this.ViewPort(vertexC.ClipSpacePosition), this.ViewPort(vertexA.ClipSpacePosition), scene);
                     //DrawLine(vertexA, vertexB, pixelA, pixelB, scene);
                     //DrawLine(vertexB, vertexC, pixelB, pixelC, scene);
 
-                    //Vertex start = pIn[pIn.Count - 1];
-                    //for (int i = 0; i < pIn.Count; i++)
-                    //{
-                    //    Vector4 viewPortA = this.ViewPort(start.ClipSpacePosition);
-                    //    Vector4 viewPortB = this.ViewPort(pIn[i].ClipSpacePosition);
-                    //    DrawLine(start, pIn[i], viewPortA, viewPortB, scene);
-                    //    start = pIn[i];
-                    //}
                     for (int i = 0; i < vtList.Count; i++)
                     {
-                        Vertex vertex1 = vtList[i].VertexA;
-                        Vertex vertex2 = vtList[i].VertexB;
-                        Vertex vertex3 = vtList[i].VertexC;
-                        Vector4 viewPort1 = this.ViewPort(vertex1.ClipSpacePosition);
-                        Vector4 viewPort2 = this.ViewPort(vertex2.ClipSpacePosition);
-                        Vector4 viewPort3 = this.ViewPort(vertex3.ClipSpacePosition);
-                        DrawLine(vertex1, vertex2, viewPort1, viewPort2, scene);
-                        DrawLine(vertex2, vertex3, viewPort2, viewPort3, scene);
-                        DrawLine(vertex3, vertex1, viewPort3, viewPort1, scene);
+                        int length = vtList[i].Vertices.Length;
+                        Vertex start = vtList[i].Vertices[length - 1];
+                        for (int j = 0; j < length; j++)
+                        {
+                            Vector4 viewPortA = this.ViewPort(start.ClipSpacePosition);
+                            Vector4 viewPortB = this.ViewPort(vtList[i].Vertices[j].ClipSpacePosition);
+                            DrawLine(start, vtList[i].Vertices[j], viewPortA, viewPortB, scene);
+                            start = vtList[i].Vertices[j];
+                        }
                     }
                 }
                 else
-                {        
+                {
+                    VertexTriangle oriVt = new VertexTriangle(vertexA, vertexB, vertexC);                   
                     // 填充三角形                  
                     for (int i = 0; i < vtList.Count; i++)
                     {
-                        //DrawTriangle(vtList[i], scene);
-                        DrawTriangle(vtList[i], scene);
+                        DrawTriangle(vtList[i], oriVt, scene);
                     }
                 }
             }
