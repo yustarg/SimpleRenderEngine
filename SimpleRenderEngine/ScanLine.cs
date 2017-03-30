@@ -97,16 +97,13 @@ namespace SimpleRenderEngine
         }
         #endregion
 
-        // 需要屏幕坐标
+        // 需要屏幕坐标, vt是裁剪后的三角形，orivt是原始三角形
         public void ProcessScanLine(VertexTriangle vt, VertexTriangle oriVt, Scene scene)
         {
             int yMin = this.height;
             int yMax = 0;
 
             Vertex[] vertices = vt.Vertices;
-            //vertices[0] = vt.VertexA;
-            //vertices[1] = vt.VertexB;
-            //vertices[2] = vt.VertexC;
 
             for (int i = 0; i < vertices.Length; i++)
             {

@@ -16,8 +16,8 @@ namespace SimpleRenderEngine
         private int width;
         private ScanLine scanLine;
         private HodgmanClip clip;
-        private Vector4 wMin;   // 裁剪空间(-1, -1, -1)
-        private Vector4 wMax;   // 裁剪空间(1, 1, 1)
+        private Vector4 clipMin;   // 裁剪空间(-1, -1, -1)
+        private Vector4 clipMax;   // 裁剪空间(1, 1, 1)
         private Scene scene;
         private readonly float[] depthBuffer;
 
@@ -27,8 +27,8 @@ namespace SimpleRenderEngine
             this.height = bmp.Height;
             this.width = bmp.Width;
             this.scanLine = new ScanLine(this);
-            this.wMin = new Vector4(-1, -1, -1, 1);
-            this.wMax = new Vector4(1, 1, 1, 1);
+            this.clipMin = new Vector4(-1, -1, -1, 1);
+            this.clipMax = new Vector4(1, 1, 1, 1);
             this.depthBuffer = new float[bmp.Width * bmp.Height];
         }
 
@@ -56,7 +56,6 @@ namespace SimpleRenderEngine
                 {
                     for (int j = 0; j < data.Width; j++)
                     {
-                        // write the logic implementation here 
                         *ptr = 128;
                         *(ptr + 1) = 128;
                         *(ptr + 2) = 128;
@@ -82,11 +81,23 @@ namespace SimpleRenderEngine
             }
         }
 
-        public Vector4 Project(Vector4 coord, Matrix4x4 mvp)
+        private Vector4 Project(Vector4 coord, Matrix4x4 mvp)
         {
             Vector4 point = mvp.Apply(coord);
             Vector4 viewPort = Homogenize(point);
             return viewPort;
+        }
+
+        // 归一化，得到屏幕坐标
+        private Vector4 Homogenize(Vector4 x)
+        {
+            Vector4 val = new Vector4();
+            float rhw = 1.0f / x.W;
+            val.X = (1.0f + x.X * rhw) * GetWidth() * 0.5f;
+            val.Y = (1.0f - x.Y * rhw) * GetHeight() * 0.5f;
+            val.Z = x.Z * rhw;
+            val.W = 1.0f;
+            return val;
         }
 
         public Vector4 ClipSpace(Vector4 x, Matrix4x4 mvp)
@@ -108,19 +119,7 @@ namespace SimpleRenderEngine
             val.Z = x.Z;
             val.W = 1.0f;
             return val;
-        }
-
-        // 归一化，得到屏幕坐标
-        public Vector4 Homogenize(Vector4 x)
-        {
-            Vector4 val = new Vector4();
-            float rhw = 1.0f / x.W;
-            val.X = (1.0f + x.X * rhw) * GetWidth() * 0.5f;
-            val.Y = (1.0f - x.Y * rhw) * GetHeight() * 0.5f;
-            val.Z = x.Z * rhw;
-            val.W = 1.0f;
-            return val;
-        }
+        }   
 
         public void DrawPoint(Vector4 point, Color4 c)
         {
@@ -154,7 +153,7 @@ namespace SimpleRenderEngine
         }
 
         // DDA 画线算法
-        public void DrawLine(Vertex v1, Vertex v2, Vector4 point0, Vector4 point1, Scene scene)
+        private void DrawLine(Vertex v1, Vertex v2, Vector4 point0, Vector4 point1, Scene scene)
         {   
             int x0 = (int)point0.X;
             int y0 = (int)point0.Y;
@@ -195,7 +194,7 @@ namespace SimpleRenderEngine
             }
         }
 
-        public void DrawTriangle(VertexTriangle vt, VertexTriangle oriVt, Scene scene)
+        private void DrawTriangle(VertexTriangle vt, VertexTriangle oriVt, Scene scene)
         {
             Vector4 normal = vt.Vertices[0].Normal;
             Vector4 dir = scene.camera.GetDir();
@@ -345,7 +344,7 @@ namespace SimpleRenderEngine
                 {
                     if (pIn.Count == 0) break;
                     clip = new HodgmanClip(this);
-                    clip.HodgmanPolygonClip((HodgmanClip.Boundary)i, wMin, wMax, pIn.ToArray());
+                    clip.HodgmanPolygonClip((HodgmanClip.Boundary)i, clipMin, clipMax, pIn.ToArray());
                     pIn = clip.GetOutputList();
                 }
                 List<VertexTriangle> vtList = this.MakeTriangle(pIn);
