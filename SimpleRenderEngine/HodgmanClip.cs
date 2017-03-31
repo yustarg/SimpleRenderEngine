@@ -128,6 +128,10 @@ namespace SimpleRenderEngine
                         flag = false;
                     break;
             }
+            if (p.W < 0)
+            {
+                flag = false;
+            }
             return flag;
         }
 
@@ -137,18 +141,23 @@ namespace SimpleRenderEngine
             Vertex s = pIn[pIn.Length - 1];
             for (int i = 0; i < pIn.Length; i++)
             {
-                if (!Inside(s.ClipSpacePosition, b, wMin, wMax) && Inside(pIn[i].ClipSpacePosition, b, wMin, wMax))
+                Vertex p = pIn[i];
+
+                if (Inside(p.ClipSpacePosition, b, wMin, wMax))
                 {
-                    this.outputList.Add(Intersect(s, pIn[i], b, wMin, wMax));
-                    this.outputList.Add(pIn[i]);
+                    if (Inside(s.ClipSpacePosition, b, wMin, wMax))
+                    {
+                        this.outputList.Add(p);
+                    }
+                    else
+                    {
+                        this.outputList.Add(Intersect(s, p, b, wMin, wMax));
+                        this.outputList.Add(pIn[i]);
+                    }
                 }
-                else if (Inside(s.ClipSpacePosition, b, wMin, wMax) && Inside(pIn[i].ClipSpacePosition, b, wMin, wMax))
+                else if (Inside(s.ClipSpacePosition, b, wMin, wMax))
                 {
-                    this.outputList.Add(pIn[i]);
-                }
-                else if (Inside(s.ClipSpacePosition, b, wMin, wMax) && (!Inside(pIn[i].ClipSpacePosition, b, wMin, wMax)))
-                {
-                    this.outputList.Add(Intersect(s, pIn[i], b, wMin, wMax));
+                    this.outputList.Add(Intersect(s, p, b, wMin, wMax));
                 }
                 s = pIn[i];
             }

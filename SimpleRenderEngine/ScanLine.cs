@@ -183,7 +183,7 @@ namespace SimpleRenderEngine
                 }
                 Color4 c1 = MathUtil.ColorInterp(a1.v1.Color, a1.v2.Color, r1);
                 Color4 c2 = MathUtil.ColorInterp(a2.v1.Color, a2.v2.Color, r2);
-                Color4 c3 = null;
+                Color4 c3 = new Color4();
                 if (scene.renderState == Scene.RenderState.TextureMapping)
                 {
                     oriVt.PreCalWeight();
@@ -202,7 +202,7 @@ namespace SimpleRenderEngine
                             {
                                 float nDotL = MathUtil.Interp(nDotL1, nDotL2, r3);
                                 c3 = MathUtil.ColorInterp(c1, c2, r3);
-                                final = c3 * scene.light.GetDiffuseColor(nDotL) + DirectionalLight.AmbientColor;
+                                final = c3 * scene.light.GetDiffuseColor(nDotL) + c3 * DirectionalLight.AmbientColor;
                             }
                             else
                             {

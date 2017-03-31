@@ -123,7 +123,7 @@ namespace SimpleRenderEngine
 
         public void DrawPoint(Vector4 point, Color4 c)
         {
-            //if (point.X >= 0 && point.Y >= 0 && point.X <= GetWidth() && point.Y <= GetHeight())
+            if (point.X >= 0 && point.Y >= 0 && point.X <= GetWidth() && point.Y <= GetHeight())
             {
                 if (point.X == GetWidth()) point.X = point.X - 1;
                 if (point.Y == GetHeight()) point.Y = point.Y - 1;
@@ -165,6 +165,7 @@ namespace SimpleRenderEngine
             int dx = x1 - x0;
             int dy = y1 - y0;
             int steps = Math.Max(Math.Abs(dx), Math.Abs(dy));
+            if (steps == 0) return;
             float xInc = (float)dx / (float)steps;
             float yInc = (float)dy / (float)steps;
 
@@ -188,19 +189,33 @@ namespace SimpleRenderEngine
                     vertexColor = MathUtil.ColorInterp(v1.Color, v2.Color, ratio);
                 }
                 float z = MathUtil.Interp(z1, z2, ratio);
+                if (float.IsNaN(z)) {
+                    //Console.WriteLine("IsNaN");
+                    return;
+                }
                 DrawPoint(new Vector4((int)x, (int)y, z, 0), vertexColor + lightColor);
                 x += xInc;
                 y += yInc;
             }
         }
 
+        private bool ShouldBackFaceCull(VertexTriangle oriVt)
+        {
+            Vector4 a = new Vector4(oriVt.Vertices[0].ScreenSpacePosition);
+            Vector4 b = new Vector4(oriVt.Vertices[1].ScreenSpacePosition);
+            Vector4 c = new Vector4(oriVt.Vertices[2].ScreenSpacePosition);
+            a.Z = b.Z = c.Z = 0;
+            Vector4 ab = b - a;
+            Vector4 ac = c - a;
+            return Vector4.Cross(ab, ac).Z > 0;
+        }
+
         private void DrawTriangle(VertexTriangle vt, VertexTriangle oriVt, Scene scene)
         {
-            Vector4 normal = vt.Vertices[0].Normal;
-            Vector4 dir = scene.camera.GetDir();
-            float dot = Vector4.Dot(dir, normal);
-            if (dot > 0) return;
-            this.scanLine.ProcessScanLine(vt, oriVt, scene);
+            if (!ShouldBackFaceCull(oriVt))
+            {
+                this.scanLine.ProcessScanLine(vt, oriVt, scene);            
+            }
         }
 
         /*
@@ -313,8 +328,6 @@ namespace SimpleRenderEngine
         }
         */
 
-        
-
         public void Render(Scene scene, BitmapData bmData)
         {
             this.scene = scene;
@@ -348,29 +361,31 @@ namespace SimpleRenderEngine
                     pIn = clip.GetOutputList();
                 }
                 List<VertexTriangle> vtList = this.MakeTriangle(pIn);
+                VertexTriangle oriVt = new VertexTriangle(vertexA, vertexB, vertexC);                   
 
                 if (scene.renderState == Scene.RenderState.WireFrame)
                 {       
                     // 画线框, 需要vertex的normal,pos,color
                     //DrawLine(vertexA, vertexB, pixelA, pixelB, scene);
                     //DrawLine(vertexB, vertexC, pixelB, pixelC, scene);
-
                     for (int i = 0; i < vtList.Count; i++)
                     {
-                        int length = vtList[i].Vertices.Length;
-                        Vertex start = vtList[i].Vertices[length - 1];
-                        for (int j = 0; j < length; j++)
+                        if (!ShouldBackFaceCull(oriVt))
                         {
-                            Vector4 viewPortA = this.ViewPort(start.ClipSpacePosition);
-                            Vector4 viewPortB = this.ViewPort(vtList[i].Vertices[j].ClipSpacePosition);
-                            DrawLine(start, vtList[i].Vertices[j], viewPortA, viewPortB, scene);
-                            start = vtList[i].Vertices[j];
-                        }
+                            int length = vtList[i].Vertices.Length;
+                            Vertex start = vtList[i].Vertices[length - 1];
+                            for (int j = 0; j < length; j++)
+                            {
+                                Vector4 viewPortA = this.ViewPort(start.ClipSpacePosition);
+                                Vector4 viewPortB = this.ViewPort(vtList[i].Vertices[j].ClipSpacePosition);
+                                DrawLine(start, vtList[i].Vertices[j], viewPortA, viewPortB, scene);
+                                start = vtList[i].Vertices[j];
+                            }
+                        }                       
                     }
                 }
                 else
                 {
-                    VertexTriangle oriVt = new VertexTriangle(vertexA, vertexB, vertexC);                   
                     // 填充三角形                  
                     for (int i = 0; i < vtList.Count; i++)
                     {

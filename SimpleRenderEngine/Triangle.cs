@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 namespace SimpleRenderEngine
 {
     // 原始三角形只存顶点的索引
-    public class Triangle
+    public struct Triangle
     {
         public int AIndex { get; set; }
         public int BIndex { get; set; }
         public int CIndex { get; set; }
 
-        public Triangle(int a, int b, int c)
+        public Triangle(int a, int b, int c) :this()
         {
             this.AIndex = a;
             this.BIndex = b;
@@ -21,7 +21,7 @@ namespace SimpleRenderEngine
         }
     }
 
-    public class VertexTriangle
+    public struct VertexTriangle
     {
         //public Vertex VertexA { get; set; }
         //public Vertex VertexB { get; set; }
@@ -39,7 +39,7 @@ namespace SimpleRenderEngine
         private float u3, v3;
         private float w1, w2, w3;
 
-        public VertexTriangle(Vertex a, Vertex b, Vertex c)
+        public VertexTriangle(Vertex a, Vertex b, Vertex c):this()
         {
             this.Vertices = new Vertex[] { a, b, c };   
         }

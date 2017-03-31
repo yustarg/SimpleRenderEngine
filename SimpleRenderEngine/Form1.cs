@@ -63,27 +63,40 @@ namespace SimpleRenderEngine
         private const float MoveSpeed = 0.5f;
         private const float RotateSpeed = 5f * (float)Math.PI / 180f;
         private int mouseX = 0;
+        private int mouseY = 0;
+        private float angle = 0;
         
         private void Form1_OnMouseMove(object sender, MouseEventArgs e)
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
-                float oriX = this.scene.camera.Position.X;
-                float oriZ = this.scene.camera.Position.Z;
-                float oriY = this.scene.camera.Position.Y;
-                if (e.X - mouseX > 0)
+                //float oriX = this.scene.camera.Position.X;
+                //float oriZ = this.scene.camera.Position.Z;
+                //float oriY = this.scene.camera.Position.Y;
+                //if (e.X - mouseX > 0)
+                //{
+                //    float newX = (float)(oriX * Math.Cos(-RotateSpeed) - oriZ * Math.Sin(-RotateSpeed));
+                //    float newZ = (float)(oriX * Math.Sin(-RotateSpeed) + oriZ * Math.Cos(-RotateSpeed));
+                //    this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
+                //}
+                //else
+                //{
+                //    float newX = (float)(oriX * Math.Cos(RotateSpeed) - oriZ * Math.Sin(RotateSpeed));
+                //    float newZ = (float)(oriX * Math.Sin(RotateSpeed) + oriZ * Math.Cos(RotateSpeed));
+                //    this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
+                //}
+                if (e.Y - mouseY > 0)
                 {
-                    float newX = (float)(oriX * Math.Cos(-RotateSpeed) - oriZ * Math.Sin(-RotateSpeed));
-                    float newZ = (float)(oriX * Math.Sin(-RotateSpeed) + oriZ * Math.Cos(-RotateSpeed));
-                    this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
+                    //this.scene.UpdateModelRotateMatrix(angle);
+                    this.scene.camera.Pitch += 0.5f;
                 }
                 else
                 {
-                    float newX = (float)(oriX * Math.Cos(RotateSpeed) - oriZ * Math.Sin(RotateSpeed));
-                    float newZ = (float)(oriX * Math.Sin(RotateSpeed) + oriZ * Math.Cos(RotateSpeed));
-                    this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
+                    //this.scene.UpdateModelRotateMatrix(angle);
+                    this.scene.camera.Pitch -= 0.5f;
                 }
                 mouseX = e.X;
+                mouseY = e.Y;
                 this.Invalidate();
             }
         }
@@ -93,19 +106,29 @@ namespace SimpleRenderEngine
             float oriX = this.scene.camera.Position.X;
             float oriY = this.scene.camera.Position.Y;
             float oriZ = this.scene.camera.Position.Z;
-            Vector4 dir = this.scene.camera.Position.Normalized;
-            float x = Vector4.Dot(dir, new Vector4(1, 0, 0, 1)) * MoveSpeed * 0.5f;
-            float y = Vector4.Dot(dir, new Vector4(0, 1, 0, 1)) * MoveSpeed * 0.5f;
-            float z = Vector4.Dot(dir, new Vector4(0, 0, 1, 1)) * MoveSpeed * 0.5f;
+            //Vector4 dir = this.scene.camera.Position.Normalized;
+            //float x = Vector4.Dot(dir, new Vector4(1, 0, 0, 1)) * MoveSpeed * 0.5f;
+            //float y = Vector4.Dot(dir, new Vector4(0, 1, 0, 1)) * MoveSpeed * 0.5f;
+            //float z = Vector4.Dot(dir, new Vector4(0, 0, 1, 1)) * MoveSpeed * 0.5f;
+
+            //if (e.Delta < 0)
+            //{
+            //    this.scene.UpdateCameraPos(new Vector4(oriX + x, oriY + y, oriZ + z, 1));
+            //}
+            //else
+            //{
+            //    this.scene.UpdateCameraPos(new Vector4(oriX - x, oriY - y, oriZ - z, 1));
+            //}
 
             if (e.Delta < 0)
             {
-                this.scene.UpdateCameraPos(new Vector4(oriX + x, oriY + y, oriZ + z, 1));
+                this.scene.UpdateCameraPos(new Vector4(oriX, oriY, oriZ - MoveSpeed * 0.5f, 1));
             }
             else
             {
-                this.scene.UpdateCameraPos(new Vector4(oriX - x, oriY - y, oriZ - z, 1));
+                this.scene.UpdateCameraPos(new Vector4(oriX, oriY, oriZ + MoveSpeed * 0.5f, 1));
             }
+
             this.Invalidate();
         }
 
@@ -124,15 +147,21 @@ namespace SimpleRenderEngine
             }
             else if (keyData == Keys.A)
             {
-                float newX = (float)(oriX * Math.Cos(-RotateSpeed) - oriZ * Math.Sin(-RotateSpeed));
-                float newZ = (float)(oriX * Math.Sin(-RotateSpeed) + oriZ * Math.Cos(-RotateSpeed));
-                this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
+                //float newX = (float)(oriX * Math.Cos(-RotateSpeed) - oriZ * Math.Sin(-RotateSpeed));
+                //float newZ = (float)(oriX * Math.Sin(-RotateSpeed) + oriZ * Math.Cos(-RotateSpeed));
+                //this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
+                //this.scene.UpdateCameraPos(new Vector4(oriX - MoveSpeed, oriY, oriZ, 1));
+                angle += RotateSpeed;
+                this.scene.UpdateModelRotateMatrix(angle);
             }
             else if (keyData == Keys.D)
             {
-                float newX = (float)(oriX * Math.Cos(RotateSpeed) - oriZ * Math.Sin(RotateSpeed));
-                float newZ = (float)(oriX * Math.Sin(RotateSpeed) + oriZ * Math.Cos(RotateSpeed));
-                this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
+                //float newX = (float)(oriX * Math.Cos(RotateSpeed) - oriZ * Math.Sin(RotateSpeed));
+                //float newZ = (float)(oriX * Math.Sin(RotateSpeed) + oriZ * Math.Cos(RotateSpeed));
+                //this.scene.UpdateCameraPos(new Vector4(newX, oriY, newZ, 1));
+                //this.scene.UpdateCameraPos(new Vector4(oriX + MoveSpeed, oriY, oriZ, 1));
+                angle -= RotateSpeed;
+                this.scene.UpdateModelRotateMatrix(angle);
             }
             this.Invalidate();
             return true;
@@ -174,7 +203,7 @@ namespace SimpleRenderEngine
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             this.hScrollBar1.Visible = checkBox1.Checked;
-            this.hScrollBar1.Value = (int)(0.2f * this.hScrollBar1.Maximum);
+            this.hScrollBar1.Value = (int)(DirectionalLight.STARTKD * this.hScrollBar1.Maximum);
             this.scene.light.IsEnable = checkBox1.Checked;
             this.Invalidate();
         }

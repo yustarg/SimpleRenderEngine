@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace SimpleRenderEngine
 {   
     // rgba 0-255
-    public  class Color4
+    public struct Color4
     {
         public byte X { get; set; }
         public byte Y { get; set; }
@@ -15,6 +15,7 @@ namespace SimpleRenderEngine
         public byte A { get; set; }
 
         public Color4(byte red, byte green, byte blue)
+            : this()
         {
             this.X = red;
             this.Y = green;

@@ -63,9 +63,9 @@ namespace SimpleRenderEngine
                 new Vertex(new Vector4(1, -1, 1, 1), new Vector4(1, 0, 0, 1), new Vector4(1, 0, 0, 0), new Color4(0, 0, 255)),
                 new Vertex(new Vector4(1, -1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(1, 0, 0, 0), new Color4(0, 0, 255)),
                 
-                new Vertex(new Vector4(1, 1, 1, 1), new Vector4(0, 1, 0, 1), new Vector4(1, 1, 0, 0), new Color4(255, 0, 0)),
-                new Vertex(new Vector4(1, 1, 1, 1), new Vector4(1, 0, 0, 1), new Vector4(1, 1, 0, 0), new Color4(255, 0, 0)),
-                new Vertex(new Vector4(1, 1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(1, 1, 0, 0), new Color4(255, 0, 0)),
+                new Vertex(new Vector4(1, 1, 1, 1), new Vector4(0, 1, 0, 1), new Vector4(1, 1, 0, 0), new Color4(0, 255, 0)),
+                new Vertex(new Vector4(1, 1, 1, 1), new Vector4(1, 0, 0, 1), new Vector4(1, 1, 0, 0), new Color4(0, 255, 0)),
+                new Vertex(new Vector4(1, 1, 1, 1), new Vector4(0, 0, 1, 1), new Vector4(1, 1, 0, 0), new Color4(0, 255, 0)),
                 
                 new Vertex(new Vector4(-1, 1, 1, 1), new Vector4(0, 1, 0, 1), new Vector4(0, 1, 0, 0), new Color4(255, 255, 0)),
                 new Vertex(new Vector4(-1, 1, 1, 1), new Vector4(-1, 0, 0, 1), new Vector4(0, 1, 0, 0), new Color4(255, 255, 0)),
@@ -77,8 +77,8 @@ namespace SimpleRenderEngine
 
         private void InitCamera(int width, int height)
         {
-            this.camera = new Camera((float)Math.PI * 0.3f, (float)width / (float)height, 1.0f, 500.0f);
-            this.camera.Position = new Vector4(0, 5, 5, 1);
+            this.camera = new Camera((float)Math.PI * 0.3f, (float)width / (float)height, 1.0f, 50.0f);
+            this.camera.Position = new Vector4(0, 0, -5, 1);
             this.camera.Target = new Vector4(0, 0, 0, 1);
             this.camera.Up = new Vector4(0, 1, 0, 1);
             this.camera.Pitch = 0;
@@ -101,16 +101,21 @@ namespace SimpleRenderEngine
             this.camera.Yaw += degree;
         }
 
+        public void UpdateModelRotateMatrix(float degreeY)
+        {
+            mesh.rotation.SetRotate(0, 1, 0, degreeY);
+        }
+
         public Matrix4x4 GetMvpMatrix()
         {
             Matrix4x4 translate = new Matrix4x4();
             translate.SetTranslate(0, 0, 0);
             Matrix4x4 scale = new Matrix4x4();
             scale.SetScale(1, 1, 1);
-            Matrix4x4 rotate = new Matrix4x4();
-            rotate.SetRotate(0, 0, 0);
-            Matrix4x4 model = scale * rotate * translate;
-            Matrix4x4 view = this.camera.LookAt();
+            Matrix4x4 rotation = mesh.rotation;
+            Matrix4x4 model = scale * rotation * translate;
+            //Matrix4x4 view = this.camera.LookAt();
+            Matrix4x4 view = this.camera.FPSView();
             Matrix4x4 projection = this.camera.Perspective();
             return model * view * projection;
         }

@@ -13,11 +13,13 @@ namespace SimpleRenderEngine
         public Vertex[] Vertices { get; private set; }
         public Triangle[] triangles { get; set; }
         public Texture texture;
+        public Matrix4x4 rotation { get; set; }
 
         public Mesh(string name)
         {
             Name = name;
             texture = new Texture(@"..\..\textures\background1.jpg", 512, 512);//706, 530);
+            this.rotation = new Matrix4x4();
         }
 
         public void SetVertices(Vertex[] vertices)
@@ -39,14 +41,14 @@ namespace SimpleRenderEngine
                 new Triangle(13, 1, 10),
                 new Triangle(13, 10, 22),
                 // 背面
-                new Triangle(14, 17, 20),
-                new Triangle(14, 20, 23),
+                new Triangle(17, 14, 23),
+                new Triangle(17, 23, 20),
                 // 上面
                 new Triangle(9, 6, 18),
                 new Triangle(9, 18, 21),
                 // 下面
-                new Triangle(0, 3, 15),
-                new Triangle(0, 15, 12)
+                new Triangle(12, 15, 3),
+                new Triangle(12, 3, 0)
             };
         }
     }

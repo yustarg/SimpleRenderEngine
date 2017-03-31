@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SimpleRenderEngine
 {
-    public class Vector4
+    public struct Vector4
     {
         public float X { get; set; }
         public float Y { get; set; }
@@ -21,14 +21,24 @@ namespace SimpleRenderEngine
             }
         }
 
-        public Vector4() { }
+        //public Vector4() { }
 
         public Vector4(float x, float y, float z, float w)
+            : this()
         {
             this.X = x;
             this.Y = y;
             this.Z = z;
             this.W = w;
+        }
+
+        public Vector4(Vector4 other)
+            : this()
+        {
+            this.X = other.X;
+            this.Y = other.Y;
+            this.Z = other.Z;
+            this.W = other.W;
         }
 
         public static Vector4 operator +(Vector4 a, Vector4 b)
